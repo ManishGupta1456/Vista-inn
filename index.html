@@ -31,6 +31,24 @@
   </div>
 </section>
 
+<section class="availability">
+  <h2>Check Room Availability</h2>
+  <form action="booking.html" method="GET" class="search-form">
+    <label>
+      Check-in:
+      <input type="date" name="checkin" required>
+    </label>
+    <label>
+      Check-out:
+      <input type="date" name="checkout" required>
+    </label>
+    <label>
+      Guests:
+      <input type="number" name="guests" min="1" max="10" required>
+    </label>
+    <button type="submit">Check Availability</button>
+  </form>
+</section>
 
     <section id="rooms" class="rooms">
       <h2>Our Rooms</h2>
