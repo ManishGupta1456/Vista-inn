@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Vista Inn – Ranthambore</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Vista Inn</h1>
+    <p>Ranthambore, Sawai Madhopur</p>
+    <nav>
+      <a href="#">Home</a>
+      <a href="#rooms">Rooms</a>
+      <a href="#contact">Contact</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="slideshow">
+        <img src="https://source.unsplash.com/1600x600/?luxury,hotel" alt="Luxury Room">
+        <img src="https://source.unsplash.com/1600x600/?suite,interior" alt="Suite">
+        <img src="https://source.unsplash.com/1600x600/?hotel,lobby" alt="Lobby">
+      </div>
+      <div class="overlay-text">
+        <h2>Welcome to Vista Inn</h2>
+        <p>Your comfortable stay near Ranthambore National Park.</p>
+      </div>
+    </section>
+
+    <section id="rooms" class="rooms">
+      <h2>Our Rooms</h2>
+      <div class="room">
+        <h3>Deluxe Double Room (x3)</h3>
+        <p>Spacious rooms with double beds, AC, free Wi-Fi, and breakfast.</p>
+      </div>
+      <div class="room">
+        <h3>Deluxe Single Room (x1)</h3>
+        <p>Cozy room with a single bed, perfect for solo travelers. Includes AC and Wi-Fi.</p>
+      </div>
+    </section>
+
+    <section id="contact" class="contact">
+      <h2>Contact Us</h2>
+      <p>📍 Location: Vista Inn, Ranthambore, Sawai Madhopur</p>
+      <p>📞 Phone: +91-XXXXXXXXXX</p>
+      <p>📧 Email: info@vistainn.com</p>
+    </section>
+  </main>
+
+  <footer>
+    <p>© 2025 Vista Inn. All rights reserved.</p>
+  </footer>
+
+  <script>
+    // Simple slideshow
+    const slides = document.querySelectorAll(".slideshow img");
+    let index = 0;
+    setInterval(() => {
+      slides.forEach((img, i) => {
+        img.style.opacity = (i === index) ? "1" : "0";
+      });
+      index = (index + 1) % slides.length;
+    }, 4000);
+  </script>
+</body>
+</html>
