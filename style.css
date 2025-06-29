@@ -190,3 +190,31 @@ footer {
   margin-top: 0;
   color: #2e3b4e;
 }
+.experience {
+  padding: 2rem;
+  max-width: 800px;
+  margin: auto;
+  background-color: #fefefe;
+  line-height: 1.6;
+}
+
+.experience h2 {
+  text-align: center;
+  color: #2e3b4e;
+}
+
+.experience h3 {
+  margin-top: 1.5rem;
+  color: #2e3b4e;
+}
+
+.experience ul {
+  list-style: none;
+  padding-left: 0;
+}
+
+.experience ul li {
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #eee;
+  font-size: 1rem;
+}
