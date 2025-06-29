@@ -19,16 +19,18 @@
 
   <main>
     <section class="hero">
-      <div class="slideshow">
-        <img src="https://source.unsplash.com/1600x600/?luxury,hotel" alt="Luxury Room">
-        <img src="https://source.unsplash.com/1600x600/?suite,interior" alt="Suite">
-        <img src="https://source.unsplash.com/1600x600/?hotel,lobby" alt="Lobby">
-      </div>
-      <div class="overlay-text">
-        <h2>Welcome to Vista Inn</h2>
-        <p>Your comfortable stay near Ranthambore National Park.</p>
-      </div>
-    </section>
+  <div class="slideshow">
+    <img src="images/room1.avif" alt="Room 1">
+    <img src="images/room2.avif" alt="Room 2">
+    <img src="images/tiger1.jpg" alt="Lobby">
+    <img src="images/tiger2.jpg" alt="Suite">
+  </div>
+  <div class="overlay-text">
+    <h2>Welcome to Vista Inn</h2>
+    <p>Your comfortable stay near Ranthambore National Park.</p>
+  </div>
+</section>
+
 
     <section id="rooms" class="rooms">
       <h2>Our Rooms</h2>
@@ -65,5 +67,15 @@
       index = (index + 1) % slides.length;
     }, 4000);
   </script>
+<script>
+  const slides = document.querySelectorAll(".slideshow img");
+  let index = 0;
+  setInterval(() => {
+    slides.forEach((img, i) => {
+      img.style.opacity = (i === index) ? "1" : "0";
+    });
+    index = (index + 1) % slides.length;
+  }, 4000);
+</script>
 </body>
 </html>
