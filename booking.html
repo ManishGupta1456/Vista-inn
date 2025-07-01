@@ -63,19 +63,39 @@
     const name = e.target.name.value;
     const email = e.target.email.value;
 
-    // Save the booking
-    const { error } = await supabase.from('bookings').insert([
-      {
-        room_type,
-        checkin_date: checkin,
-        checkout_date: checkout,
-        guest_name: name,
-        guest_email: email
-      }
-    ]);
+    // Check for conflicting bookings
+    const { data: bookings, error: bookingError } = await supabase
+      .from('bookings')
+      .select('*')
+      .or(`and(checkin_date.lte.${checkout},checkout_date.gte.${checkin})`)
+      .eq('room_type', room_type);
 
-    if (error) {
-      alert("❌ Booking failed.");
+    // Check for blocked dates
+    const { data: blocks, error: blockError } = await supabase
+      .from('blocked_dates')
+      .select('*')
+      .eq('room_type', room_type)
+      .eq('blocked_date', checkin);  // basic check
+
+    // Set room limits
+    const maxRooms = room_type === 'double' ? 3 : 1;
+
+    if ((bookings?.length || 0) + (blocks?.length || 0) >= maxRooms) {
+      alert("❌ No rooms available for the selected dates.");
+      return;
+    }
+
+    // Save the booking
+    const { error: saveError } = await supabase.from('bookings').insert([{
+      room_type,
+      checkin_date: checkin,
+      checkout_date: checkout,
+      guest_name: name,
+      guest_email: email
+    }]);
+
+    if (saveError) {
+      alert("❌ Booking failed. Please try again.");
     } else {
       alert("✅ Booking confirmed!");
       window.location.href = "index.html";
