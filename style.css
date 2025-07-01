@@ -1,5 +1,5 @@
 body {
-  font-family: Arial, sans-serif;
+  font-family: Georgia, Bradley Hand ITC;
   margin: 0;
   padding: 0;
   background-color: #fdfdfd;
@@ -218,3 +218,40 @@ footer {
   border-bottom: 1px solid #eee;
   font-size: 1rem;
 }
+.brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.logo-img {
+  height: 85px;   /* You can increase/decrease this */
+  width: auto;
+}
+.hotel-name {
+  font-size: 3.5rem; 
+  font-weight: bold;
+  color: #ffffff; 
+  font-family: 'Bradley Hand ITC', serif; 
+  margin: 0;
+  text-align: center;
+}
+.room-detail {
+  padding: 2rem;
+  max-width: 800px;
+  margin: auto;
+  font-size: 1.1rem;
+  line-height: 1.6;
+}
+
+.room-detail ul {
+  list-style: none;
+  padding-left: 0;
+}
+
+.room-detail ul li {
+  margin-bottom: 0.5rem;
+}
+
