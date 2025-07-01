@@ -254,4 +254,29 @@ footer {
 .room-detail ul li {
   margin-bottom: 0.5rem;
 }
+.slider {
+  width: 100%;
+  max-width: 800px;
+  margin: 2rem auto;
+  overflow: hidden;
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
 
+.slide-track {
+  display: flex;
+  animation: scrollSlider 12s infinite ease-in-out;
+}
+
+.slide-track img {
+  width: 100%;
+  flex-shrink: 0;
+  object-fit: cover;
+}
+
+@keyframes scrollSlider {
+  0% { transform: translateX(0%); }
+  33% { transform: translateX(-100%); }
+  66% { transform: translateX(-200%); }
+  100% { transform: translateX(0%); }
+}
