@@ -48,5 +48,39 @@
   <footer>
     <p>© 2025 Vista Inn. All rights reserved.</p>
   </footer>
+  <!-- Load Supabase -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+  const supabase = createClient('https://fvfhptpkyntqijtpgdse.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ2ZmhwdHBreW50cWlqdHBnZHNlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEzNDk4OTAsImV4cCI6MjA2NjkyNTg5MH0.HFVj4oZ_acMOmLiL7ix-G8DahuWzmL9mqDkuvjr8HRA');
+
+  document.querySelector('form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const room_type = e.target.roomtype.value;
+    const checkin = e.target.checkin.value;
+    const checkout = e.target.checkout.value;
+    const name = e.target.name.value;
+    const email = e.target.email.value;
+
+    // Save the booking
+    const { error } = await supabase.from('bookings').insert([
+      {
+        room_type,
+        checkin_date: checkin,
+        checkout_date: checkout,
+        guest_name: name,
+        guest_email: email
+      }
+    ]);
+
+    if (error) {
+      alert("❌ Booking failed.");
+    } else {
+      alert("✅ Booking confirmed!");
+      window.location.href = "index.html";
+    }
+  });
+</script>
 </body>
 </html>
