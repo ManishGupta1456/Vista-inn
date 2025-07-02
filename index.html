@@ -6,81 +6,60 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="style.css">
 </head>
+<!-- ✅ Supabase SDK -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <script>
-  const SUPABASE_URL = "https://fvfhptpkyntqijtpgdse.supabase.co";
-  const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ2ZmhwdHBreW50cWlqdHBnZHNlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEzNDk4OTAsImV4cCI6MjA2NjkyNTg5MH0.HFVj4oZ_acMOmLiL7ix-G8DahuWzmL9mqDkuvjr8HRA";
+  const { createClient } = supabase;
 
-  const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
-
-  async function checkAvailability(checkin, checkout, room_type) {
-    const { data, error } = await supabase
-      .from('bookings')
-      .select('*')
-      .or(`and(checkin_date.lte.${checkout},checkout_date.gte.${checkin})`)
-      .eq('room_type', room_type);
-
-    if (error) {
-      alert("Error checking availability");
-      return;
-    }
-
-    if (data.length > 0) {
-      alert("❌ No rooms available for selected dates.");
-    } else {
-      window.location.href = "booking.html";
-    }
-  }
-
-  // Bind your search form
-  document.querySelector("#search-form").addEventListener("submit", function(e) {
-    e.preventDefault();
-    const checkin = document.querySelector("[name=checkin]").value;
-    const checkout = document.querySelector("[name=checkout]").value;
-    const guests = document.querySelector("[name=guests]").value;
-
-    checkAvailability(checkin, checkout, "double"); // or "single"
-  });
-</script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-  const supabase = createClient('YOUR_SUPABASE_URL', 'YOUR_SUPABASE_KEY');
+  const supabaseClient = createClient(
+    'https://fvfhptpkyntqijtpgdse.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ2ZmhwdHBreW50cWlqdHBnZHNlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEzNDk4OTAsImV4cCI6MjA2NjkyNTg5MH0.HFVj4oZ_acMOmLiL7ix-G8DahuWzmL9mqDkuvjr8HRA'
+  );
 
   document.querySelector('form').addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    const room_type = e.target.roomtype.value;
-    const checkin = e.target.checkin.value;
-    const checkout = e.target.checkout.value;
+    const form = e.target;
+    const room_type = form.roomtype.value;
+    const checkin = form.checkin.value;
+    const checkout = form.checkout.value;
+    const name = form.name.value;
+    const email = form.email.value;
 
-    // Check existing bookings count
-    const { data: bookings, error: bookingError } = await supabase
+    // ✅ Check overlapping bookings
+    const { data: bookings } = await supabaseClient
       .from('bookings')
       .select('*')
-      .or(`and(checkin_date.lte.${checkout},checkout_date.gte.${checkin})`)
-      .eq('room_type', room_type);
+      .eq('room_type', room_type)
+      .or(`and(checkin_date.lte.${checkout},checkout_date.gte.${checkin})`);
 
-    const { data: blocked, error: blockError } = await supabase
+    // ✅ Check blocked dates in the same range
+    const { data: blocked } = await supabaseClient
       .from('blocked_dates')
       .select('*')
       .eq('room_type', room_type)
-      .eq('blocked_date', checkin);
+      .gte('blocked_date', checkin)
+      .lte('blocked_date', checkout);
 
     const maxRooms = room_type === 'double' ? 3 : 1;
+    const totalBooked = (bookings?.length || 0) + (blocked?.length || 0);
 
-    if ((bookings.length + blocked.length) >= maxRooms) {
-      alert("❌ No rooms available for the selected date.");
+    if (totalBooked >= maxRooms) {
+      alert("❌ No rooms available for the selected dates.");
       return;
     }
 
-    // Proceed with booking
-    const { error: saveError } = await supabase.from('bookings').insert([{
-      room_type,
-      checkin_date: checkin,
-      checkout_date: checkout,
-      guest_name: e.target.name.value,
-      guest_email: e.target.email.value
-    }]);
+    // ✅ Save the booking
+    const { error: saveError } = await supabaseClient.from('bookings').insert([
+      {
+        room_type,
+        checkin_date: checkin,
+        checkout_date: checkout,
+        guest_name: name,
+        guest_email: email
+      }
+    ]);
 
     if (saveError) {
       alert("❌ Booking failed.");
