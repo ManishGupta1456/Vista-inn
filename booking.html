@@ -69,21 +69,23 @@
     const name = e.target.name.value;
     const email = e.target.email.value;
 
-    // Check availability first
-    // Count bookings where check-in overlaps selected date
+  
+  
+// Find overlapping bookings in the same room type
 const { data: bookings, error: bookingError } = await supabaseClient
   .from('bookings')
   .select('*')
   .eq('room_type', room_type)
-  .gte('checkin_date', checkin)
-  .lte('checkin_date', checkout);
+  .or(`and(checkin_date,lte.${checkout},checkout_date,gte.${checkin})`);
 
-// Count blocks on the selected check-in date
+// Count blocked entries on any overlapping date
 const { data: blocks, error: blockError } = await supabaseClient
   .from('blocked_dates')
   .select('*')
   .eq('room_type', room_type)
-  .eq('blocked_date', checkin);
+  .gte('blocked_date', checkin)
+  .lte('blocked_date', checkout);
+
 
 // Set room limits
 const maxRooms = room_type === 'double' ? 3 : 1;
