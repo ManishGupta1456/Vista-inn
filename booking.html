@@ -50,8 +50,6 @@
   </footer>
 <!-- Supabase SDK -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-<!-- Booking logic -->
 <script>
   const { createClient } = supabase;
 
@@ -60,57 +58,72 @@
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ2ZmhwdHBreW50cWlqdHBnZHNlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEzNDk4OTAsImV4cCI6MjA2NjkyNTg5MH0.HFVj4oZ_acMOmLiL7ix-G8DahuWzmL9mqDkuvjr8HRA'
   );
 
+  // Helper: generate array of dates between two dates
+  function getDateRange(start, end) {
+    const dates = [];
+    const curr = new Date(start);
+    const last = new Date(end);
+    while (curr <= last) {
+      dates.push(curr.toISOString().split("T")[0]);
+      curr.setDate(curr.getDate() + 1);
+    }
+    return dates;
+  }
+
   document.querySelector('form').addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    const room_type = e.target.roomtype.value;
-    const checkin = e.target.checkin.value;
-    const checkout = e.target.checkout.value;
-    const name = e.target.name.value;
-    const email = e.target.email.value;
+    const form = e.target;
+    const room_type = form.roomtype.value;
+    const checkin = form.checkin.value;
+    const checkout = form.checkout.value;
+    const name = form.name.value;
+    const email = form.email.value;
 
-  
-  
-// Find overlapping bookings in the same room type
-const { data: bookings, error: bookingError } = await supabaseClient
-  .from('bookings')
-  .select('*')
-  .eq('room_type', room_type)
-  .or(`and(checkin_date,lte.${checkout},checkout_date,gte.${checkin})`);
+    const datesToCheck = getDateRange(checkin, checkout);
+    const maxRooms = room_type === 'double' ? 3 : 1;
 
-// Count blocked entries on any overlapping date
-const { data: blocks, error: blockError } = await supabaseClient
-  .from('blocked_dates')
-  .select('*')
-  .eq('room_type', room_type)
-  .gte('blocked_date', checkin)
-  .lte('blocked_date', checkout);
+    let totalOverlaps = 0;
 
+    for (const date of datesToCheck) {
+      // Count overlapping bookings
+      const { data: bookings } = await supabaseClient
+        .from('bookings')
+        .select('*')
+        .eq('room_type', room_type)
+        .lte('checkin_date', date)
+        .gte('checkout_date', date);
 
-// Set room limits
-const maxRooms = room_type === 'double' ? 3 : 1;
-const totalBooked = (bookings?.length || 0) + (blocks?.length || 0);
+      // Count blocked rooms on that date
+      const { data: blocked } = await supabaseClient
+        .from('blocked_dates')
+        .select('*')
+        .eq('room_type', room_type)
+        .eq('blocked_date', date);
 
-if (totalBooked >= maxRooms) {
-  alert("❌ No rooms available for the selected dates.");
-  return;
-}
+      const bookedCount = (bookings?.length || 0) + (blocked?.length || 0);
 
-
-    // Insert the booking
-    const { error: saveError } = await supabaseClient.from('bookings').insert([
-      {
-        room_type,
-        checkin_date: checkin,
-        checkout_date: checkout,
-        guest_name: name,
-        guest_email: email
+      if (bookedCount >= maxRooms) {
+        alert(`❌ No rooms available on ${date}. Please choose other dates.`);
+        return;
       }
-    ]);
+
+      // Optional: track total conflicts across all dates
+      totalOverlaps += bookedCount;
+    }
+
+    // Save the booking
+    const { error: saveError } = await supabaseClient.from('bookings').insert([{
+      room_type,
+      checkin_date: checkin,
+      checkout_date: checkout,
+      guest_name: name,
+      guest_email: email
+    }]);
 
     if (saveError) {
-      console.error(saveError);
       alert("❌ Booking failed.");
+      console.error(saveError);
     } else {
       alert("✅ Booking confirmed!");
       window.location.href = "index.html";
