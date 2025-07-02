@@ -70,65 +70,72 @@
     return dates;
   }
 
-  document.querySelector('form').addEventListener('submit', async (e) => {
-    e.preventDefault();
+  const form = document.querySelector('form'); // ✅ FIXED LINE
+  if (form) {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
 
-    const form = e.target;
-    const room_type = form.roomtype.value;
-    const checkin = form.checkin.value;
-    const checkout = form.checkout.value;
-    const name = form.name.value;
-    const email = form.email.value;
+      const room_type = form.roomtype.value;
+      const checkin = form.checkin.value;
+      const checkout = form.checkout.value;
+      const name = form.name.value;
+      const email = form.email.value;
 
-    const datesToCheck = getDateRange(checkin, checkout);
-    const maxRooms = room_type === 'double' ? 3 : 1;
+      const datesToCheck = getDateRange(checkin, checkout);
+      const maxRooms = room_type === 'double' ? 3 : 1;
 
-    let totalOverlaps = 0;
+      for (const date of datesToCheck) {
+  let bookings = [];
+  let blocked = [];
 
-    for (const date of datesToCheck) {
-      // Count overlapping bookings
-      const { data: bookings } = await supabaseClient
-        .from('bookings')
-        .select('*')
-        .eq('room_type', room_type)
-        .lte('checkin_date', date)
-        .gte('checkout_date', date);
+  // Get all bookings for this room type that MIGHT overlap
+  const resultBookings = await supabaseClient
+    .from('bookings')
+    .select('*')
+    .eq('room_type', room_type);
 
-      // Count blocked rooms on that date
-      const { data: blocked } = await supabaseClient
-        .from('blocked_dates')
-        .select('*')
-        .eq('room_type', room_type)
-        .eq('blocked_date', date);
-
-      const bookedCount = (bookings?.length || 0) + (blocked?.length || 0);
-
-      if (bookedCount >= maxRooms) {
-        alert(`❌ No rooms available on ${date}. Please choose other dates.`);
-        return;
-      }
-
-      // Optional: track total conflicts across all dates
-      totalOverlaps += bookedCount;
-    }
-
-    // Save the booking
-    const { error: saveError } = await supabaseClient.from('bookings').insert([{
-      room_type,
-      checkin_date: checkin,
-      checkout_date: checkout,
-      guest_name: name,
-      guest_email: email
-    }]);
-
-    if (saveError) {
-      alert("❌ Booking failed.");
-      console.error(saveError);
-    } else {
-      alert("✅ Booking confirmed!");
-      window.location.href = "index.html";
-    }
+  bookings = (resultBookings.data || []).filter(b => {
+    return date >= b.checkin_date && date <= b.checkout_date;
   });
+
+  // Get blocked dates
+  const resultBlocked = await supabaseClient
+    .from('blocked_dates')
+    .select('*')
+    .eq('room_type', room_type)
+    .eq('blocked_date', date);
+
+  blocked = resultBlocked.data || [];
+
+  const bookedCount = bookings.length + blocked.length;
+  console.log("Check for date:", date, "Bookings:", bookings.length, "Blocked:", blocked.length);
+
+  if (bookedCount >= maxRooms) {
+    alert(`❌ No rooms available on ${date}.`);
+    return;
+  }
+}
+
+
+
+      // Save booking
+      const { error: saveError } = await supabaseClient.from('bookings').insert([{
+        room_type,
+        checkin_date: checkin,
+        checkout_date: checkout,
+        guest_name: name,
+        guest_email: email
+      }]);
+
+      if (saveError) {
+        alert("❌ Booking failed.");
+        console.error(saveError);
+      } else {
+        alert("✅ Booking confirmed!");
+        window.location.href = "index.html";
+      }
+    });
+  }
 </script>
 
 </body>
