@@ -4,51 +4,96 @@
   <meta charset="UTF-8">
   <title>Admin – Block Room Dates</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      font-family: sans-serif;
+      max-width: 600px;
+      margin: 2rem auto;
+      padding: 1rem;
+    }
+    label {
+      display: block;
+      margin-bottom: 1rem;
+    }
+    input, select {
+      padding: 0.5rem;
+      width: 100%;
+      margin-top: 0.5rem;
+    }
+    button {
+      padding: 0.6rem 1.5rem;
+      background: #2e3b4e;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    #status {
+      margin-top: 1rem;
+    }
+  </style>
 </head>
 <body>
-  <main style="max-width: 500px; margin: 2rem auto;">
-    <h2>Block Dates for Offline Bookings</h2>
-    <form id="block-form">
-      <label>Room Type:
-        <select name="room_type" required>
-          <option value="double">Deluxe Double</option>
-          <option value="single">Deluxe Single</option>
-        </select>
-      </label>
-      <label>Blocked Date:
-        <input type="date" name="blocked_date" required>
-      </label>
-      <label>Reason (optional):
-        <input type="text" name="reason">
-      </label>
-      <button type="submit">Block Date</button>
-    </form>
-    <p id="status" style="margin-top: 1rem;"></p>
-  </main>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script>
-    const supabase = createClient('https://fvfhptpkyntqijtpgdse.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ2ZmhwdHBreW50cWlqdHBnZHNlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEzNDk4OTAsImV4cCI6MjA2NjkyNTg5MH0.HFVj4oZ_acMOmLiL7ix-G8DahuWzmL9mqDkuvjr8HRA');
+  <h2>Block Room Date (Admin Panel)</h2>
+  <form id="block-form">
+    <label>
+      Room Type:
+      <select name="room_type" required>
+        <option value="double">Deluxe Double</option>
+        <option value="single">Deluxe Single</option>
+      </select>
+    </label>
 
-    document.getElementById('block-form').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const room_type = e.target.room_type.value;
-      const blocked_date = e.target.blocked_date.value;
-      const reason = e.target.reason.value;
+    <label>
+      Blocked Date:
+      <input type="date" name="blocked_date" required>
+    </label>
 
-      const { error } = await supabase.from('blocked_dates').insert([
-        { room_type, blocked_date, reason }
-      ]);
+    <label>
+      Reason:
+      <input type="text" name="reason" placeholder="e.g. Offline Booking or Maintenance">
+    </label>
 
-      const status = document.getElementById("status");
-      if (error) {
-        status.textContent = "❌ Failed to block date.";
-      } else {
-        status.textContent = "✅ Date successfully blocked.";
-        e.target.reset();
-      }
-    });
-  </script>
+    <button type="submit">Block Date</button>
+  </form>
+
+  <p id="status"></p>
+
+  <!-- Supabase JS -->
+ <!-- ✅ Load Supabase SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<!-- ✅ Then create the client the RIGHT way for version 2 -->
+<script>
+  const { createClient } = supabase;
+
+  const supabaseClient = createClient(
+    'https://fvfhptpkyntqijtpgdse.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ2ZmhwdHBreW50cWlqdHBnZHNlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEzNDk4OTAsImV4cCI6MjA2NjkyNTg5MH0.HFVj4oZ_acMOmLiL7ix-G8DahuWzmL9mqDkuvjr8HRA'
+  );
+
+  document.getElementById('block-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const room_type = e.target.room_type.value;
+    const blocked_date = e.target.blocked_date.value;
+    const reason = e.target.reason.value;
+
+    const { error } = await supabaseClient.from('blocked_dates').insert([
+      { room_type, blocked_date, reason }
+    ]);
+
+    const status = document.getElementById("status");
+
+    if (error) {
+      console.error(error);
+      status.textContent = "❌ Failed to block date.";
+    } else {
+      status.textContent = "✅ Date successfully blocked.";
+      e.target.reset();
+    }
+  });
+</script>
+
+
 </body>
 </html>
