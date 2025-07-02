@@ -48,11 +48,17 @@
   <footer>
     <p>© 2025 Vista Inn. All rights reserved.</p>
   </footer>
-<!-- Load Supabase -->
+<!-- Supabase SDK -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
+<!-- Booking logic -->
 <script>
-  const supabase = createClient('https://fvfhptpkyntqijtpgdse.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ2ZmhwdHBreW50cWlqdHBnZHNlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEzNDk4OTAsImV4cCI6MjA2NjkyNTg5MH0.HFVj4oZ_acMOmLiL7ix-G8DahuWzmL9mqDkuvjr8HRA');
+  const { createClient } = supabase;
+
+  const supabaseClient = createClient(
+    'https://fvfhptpkyntqijtpgdse.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ2ZmhwdHBreW50cWlqdHBnZHNlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEzNDk4OTAsImV4cCI6MjA2NjkyNTg5MH0.HFVj4oZ_acMOmLiL7ix-G8DahuWzmL9mqDkuvjr8HRA'
+  );
 
   document.querySelector('form').addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -63,39 +69,40 @@
     const name = e.target.name.value;
     const email = e.target.email.value;
 
-    // Check for conflicting bookings
-    const { data: bookings, error: bookingError } = await supabase
+    // Check availability first
+    const { data: bookings, error: bookingError } = await supabaseClient
       .from('bookings')
       .select('*')
       .or(`and(checkin_date.lte.${checkout},checkout_date.gte.${checkin})`)
       .eq('room_type', room_type);
 
-    // Check for blocked dates
-    const { data: blocks, error: blockError } = await supabase
+    const { data: blocks, error: blockError } = await supabaseClient
       .from('blocked_dates')
       .select('*')
       .eq('room_type', room_type)
-      .eq('blocked_date', checkin);  // basic check
+      .eq('blocked_date', checkin);
 
-    // Set room limits
     const maxRooms = room_type === 'double' ? 3 : 1;
 
-    if ((bookings?.length || 0) + (blocks?.length || 0) >= maxRooms) {
+    if ((bookings.length + blocks.length) >= maxRooms) {
       alert("❌ No rooms available for the selected dates.");
       return;
     }
 
-    // Save the booking
-    const { error: saveError } = await supabase.from('bookings').insert([{
-      room_type,
-      checkin_date: checkin,
-      checkout_date: checkout,
-      guest_name: name,
-      guest_email: email
-    }]);
+    // Insert the booking
+    const { error: saveError } = await supabaseClient.from('bookings').insert([
+      {
+        room_type,
+        checkin_date: checkin,
+        checkout_date: checkout,
+        guest_name: name,
+        guest_email: email
+      }
+    ]);
 
     if (saveError) {
-      alert("❌ Booking failed. Please try again.");
+      console.error(saveError);
+      alert("❌ Booking failed.");
     } else {
       alert("✅ Booking confirmed!");
       window.location.href = "index.html";
