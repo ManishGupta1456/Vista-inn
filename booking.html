@@ -92,8 +92,16 @@ window.addEventListener('DOMContentLoaded', () => {
     if (form) {
       form.addEventListener('submit', async (e) => {
         e.preventDefault();
+  const room_type = form.roomtype.value;
+  const guests = parseInt(form.guests.value);
 
-        const room_type = form.roomtype.value;
+  // 🔒 Enforce guest limits manually
+  if ((room_type === 'single' && guests > 1) || (room_type === 'double' && guests > 2)) {
+    alert(`❌ Guest limit exceeded for ${room_type} room.`);
+    return;
+  }
+
+        
         const checkin = form.checkin.value;
         const checkout = form.checkout.value;
         const name = form.name.value;
