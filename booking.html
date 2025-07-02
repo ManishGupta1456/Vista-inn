@@ -16,7 +16,7 @@
 
   <main class="booking-form">
     <h2>Reservation Details</h2>
-    <form action="#" method="POST">
+    <form>
       <label>Full Name:
         <input type="text" name="name" required>
       </label>
@@ -48,95 +48,93 @@
   <footer>
     <p>© 2025 Vista Inn. All rights reserved.</p>
   </footer>
-<!-- Supabase SDK -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-  const { createClient } = supabase;
 
-  const supabaseClient = createClient(
-    'https://fvfhptpkyntqijtpgdse.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ2ZmhwdHBreW50cWlqdHBnZHNlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEzNDk4OTAsImV4cCI6MjA2NjkyNTg5MH0.HFVj4oZ_acMOmLiL7ix-G8DahuWzmL9mqDkuvjr8HRA'
-  );
+  <!-- Supabase SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const { createClient } = supabase;
+    const supabaseClient = createClient(
+      'https://fvfhptpkyntqijtpgdse.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ2ZmhwdHBreW50cWlqdHBnZHNlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEzNDk4OTAsImV4cCI6MjA2NjkyNTg5MH0.HFVj4oZ_acMOmLiL7ix-G8DahuWzmL9mqDkuvjr8HRA'
+    );
 
-  // Helper: generate array of dates between two dates
-  function getDateRange(start, end) {
-    const dates = [];
-    const curr = new Date(start);
-    const last = new Date(end);
-    while (curr <= last) {
-      dates.push(curr.toISOString().split("T")[0]);
-      curr.setDate(curr.getDate() + 1);
-    }
-    return dates;
-  }
-
-  const form = document.querySelector('form'); // ✅ FIXED LINE
-  if (form) {
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-
-      const room_type = form.roomtype.value;
-      const checkin = form.checkin.value;
-      const checkout = form.checkout.value;
-      const name = form.name.value;
-      const email = form.email.value;
-
-      const datesToCheck = getDateRange(checkin, checkout);
-      const maxRooms = room_type === 'double' ? 3 : 1;
-
-      for (const date of datesToCheck) {
-  let bookings = [];
-  let blocked = [];
-
-  // Get all bookings for this room type that MIGHT overlap
-  const resultBookings = await supabaseClient
-    .from('bookings')
-    .select('*')
-    .eq('room_type', room_type);
-
-  bookings = (resultBookings.data || []).filter(b => {
-    return date >= b.checkin_date && date <= b.checkout_date;
-  });
-
-  // Get blocked dates
-  const resultBlocked = await supabaseClient
-    .from('blocked_dates')
-    .select('*')
-    .eq('room_type', room_type)
-    .eq('blocked_date', date);
-
-  blocked = resultBlocked.data || [];
-
-  const bookedCount = bookings.length + blocked.length;
-  console.log("Check for date:", date, "Bookings:", bookings.length, "Blocked:", blocked.length);
-
-  if (bookedCount >= maxRooms) {
-    alert(`❌ No rooms available on ${date}.`);
-    return;
-  }
-}
-
-
-
-      // Save booking
-      const { error: saveError } = await supabaseClient.from('bookings').insert([{
-        room_type,
-        checkin_date: checkin,
-        checkout_date: checkout,
-        guest_name: name,
-        guest_email: email
-      }]);
-
-      if (saveError) {
-        alert("❌ Booking failed.");
-        console.error(saveError);
-      } else {
-        alert("✅ Booking confirmed!");
-        window.location.href = "index.html";
+    function getDateRange(start, end) {
+      const dates = [];
+      let current = new Date(start);
+      const last = new Date(end);
+      while (current <= last) {
+        dates.push(current.toISOString().split("T")[0]);
+        current.setDate(current.getDate() + 1);
       }
-    });
-  }
-</script>
+      return dates;
+    }
 
+    const form = document.querySelector('form');
+    if (form) {
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const room_type = form.roomtype.value;
+        const checkin = form.checkin.value;
+        const checkout = form.checkout.value;
+        const name = form.name.value;
+        const email = form.email.value;
+        const maxRooms = room_type === 'double' ? 3 : 1;
+
+        const datesToCheck = getDateRange(checkin, checkout);
+
+        for (const date of datesToCheck) {
+          try {
+            // Get all bookings of this type
+            const resultBookings = await supabaseClient
+              .from('bookings')
+              .select('checkin_date, checkout_date')
+              .eq('room_type', room_type);
+
+            const bookings = (resultBookings.data || []).filter(b => {
+              return date >= b.checkin_date && date <= b.checkout_date;
+            });
+
+            const resultBlocked = await supabaseClient
+              .from('blocked_dates')
+              .select('blocked_date')
+              .eq('room_type', room_type)
+              .eq('blocked_date', date);
+
+            const blocked = resultBlocked.data || [];
+
+            const bookedCount = bookings.length + blocked.length;
+            console.log(`📆 ${date} → Booked: ${bookings.length}, Blocked: ${blocked.length}`);
+
+            if (bookedCount >= maxRooms) {
+              alert(`❌ No rooms available on ${date}. Please choose other dates.`);
+              return;
+            }
+          } catch (err) {
+            console.error("⚠ Error checking availability:", err);
+            alert("Something went wrong while checking availability.");
+            return;
+          }
+        }
+
+        // Save the booking
+        const { error } = await supabaseClient.from('bookings').insert([{
+          room_type,
+          checkin_date: checkin,
+          checkout_date: checkout,
+          guest_name: name,
+          guest_email: email
+        }]);
+
+        if (error) {
+          console.error(error);
+          alert("❌ Booking failed.");
+        } else {
+          alert("✅ Booking confirmed!");
+          window.location.href = "index.html";
+        }
+      });
+    }
+  </script>
 </body>
 </html>
