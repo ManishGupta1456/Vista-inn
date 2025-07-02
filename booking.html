@@ -70,24 +70,30 @@
     const email = e.target.email.value;
 
     // Check availability first
-    const { data: bookings, error: bookingError } = await supabaseClient
-      .from('bookings')
-      .select('*')
-      .or(`and(checkin_date.lte.${checkout},checkout_date.gte.${checkin})`)
-      .eq('room_type', room_type);
+    // Count bookings where check-in overlaps selected date
+const { data: bookings, error: bookingError } = await supabaseClient
+  .from('bookings')
+  .select('*')
+  .eq('room_type', room_type)
+  .gte('checkin_date', checkin)
+  .lte('checkin_date', checkout);
 
-    const { data: blocks, error: blockError } = await supabaseClient
-      .from('blocked_dates')
-      .select('*')
-      .eq('room_type', room_type)
-      .eq('blocked_date', checkin);
+// Count blocks on the selected check-in date
+const { data: blocks, error: blockError } = await supabaseClient
+  .from('blocked_dates')
+  .select('*')
+  .eq('room_type', room_type)
+  .eq('blocked_date', checkin);
 
-    const maxRooms = room_type === 'double' ? 3 : 1;
+// Set room limits
+const maxRooms = room_type === 'double' ? 3 : 1;
+const totalBooked = (bookings?.length || 0) + (blocks?.length || 0);
 
-    if ((bookings.length + blocks.length) >= maxRooms) {
-      alert("❌ No rooms available for the selected dates.");
-      return;
-    }
+if (totalBooked >= maxRooms) {
+  alert("❌ No rooms available for the selected dates.");
+  return;
+}
+
 
     // Insert the booking
     const { error: saveError } = await supabaseClient.from('bookings').insert([
