@@ -33,7 +33,7 @@
         <input type="date" name="checkout" required>
       </label>
       <label>Number of Guests:
-        <input type="number" name="guests" min="1" max="10" required>
+        <input type="number" name="guests" min="1" max="2" required>
       </label>
       <label>Room Type:
         <select name="roomtype" required>
@@ -58,6 +58,25 @@
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ2ZmhwdHBreW50cWlqdHBnZHNlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEzNDk4OTAsImV4cCI6MjA2NjkyNTg5MH0.HFVj4oZ_acMOmLiL7ix-G8DahuWzmL9mqDkuvjr8HRA'
     );
 
+window.addEventListener('DOMContentLoaded', () => {
+  const roomTypeSelect = document.getElementById('roomtype');
+  const guestsInput = document.getElementById('guests');
+
+  if (roomTypeSelect && guestsInput) {
+    roomTypeSelect.addEventListener('change', () => {
+      if (roomTypeSelect.value === 'single') {
+        guestsInput.max = 1;
+        guestsInput.value = 1;
+      } else {
+        guestsInput.max = 2;
+        if (guestsInput.value < 1) guestsInput.value = 1;
+      }
+    });
+
+    // 👇 Also run once on load to set correct guest limit
+    roomTypeSelect.dispatchEvent(new Event('change'));
+  }
+});
     function getDateRange(start, end) {
       const dates = [];
       let current = new Date(start);
@@ -92,24 +111,32 @@
               .eq('room_type', room_type);
 
             const bookings = (resultBookings.data || []).filter(b => {
-              return date >= b.checkin_date && date <= b.checkout_date;
-            });
+  const inDate = new Date(date);
+  const start = new Date(b.checkin_date);
+  const end = new Date(b.checkout_date);
+  return inDate >= start && inDate <= end;
+});
 
             const resultBlocked = await supabaseClient
-              .from('blocked_dates')
-              .select('blocked_date')
-              .eq('room_type', room_type)
-              .eq('blocked_date', date);
+  .from('blocked_dates')
+  .select('start_date, end_date')
+  .eq('room_type', room_type);
 
-            const blocked = resultBlocked.data || [];
+const blocked = (resultBlocked.data || []).filter(b => {
+  const inDate = new Date(date);
+  const start = new Date(b.start_date);
+  const end = new Date(b.end_date);
+  return inDate >= start && inDate <= end;
+});
 
-            const bookedCount = bookings.length + blocked.length;
-            console.log(`📆 ${date} → Booked: ${bookings.length}, Blocked: ${blocked.length}`);
+const bookedCount = bookings.length + blocked.length;
+console.log(`📆 ${date} → Booked: ${bookings.length}, Blocked: ${blocked.length}`);
 
-            if (bookedCount >= maxRooms) {
-              alert(`❌ No rooms available on ${date}. Please choose other dates.`);
-              return;
-            }
+if (bookedCount >= maxRooms) {
+  alert(`❌ No rooms available on ${date}. Please choose other dates.`);
+  return;
+}
+
           } catch (err) {
             console.error("⚠ Error checking availability:", err);
             alert("Something went wrong while checking availability.");
