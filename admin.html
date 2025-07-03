@@ -44,9 +44,17 @@
     }
   </style>
 </head>
+<div id="login-section">
+  <h2>Admin Login</h2>
+  <input type="email" id="login-email" placeholder="Email" required>
+  <input type="password" id="login-password" placeholder="Password" required>
+  <button onclick="login()">Login</button>
+  <p id="login-status"></p>
+</div>
 <body>
- 
-  <div class="form-section">
+<div id="admin-panel" style="display: none;">
+ <button id="logout-btn" style="background: crimson; margin-bottom: 1rem;">🚪 Logout</button>
+ <div class="form-section">
     <h2>Block Room Date</h2>
     <form id="block-form">
       <label>
@@ -90,6 +98,24 @@
     </p>
     <div id="calendar"></div>
   </div>
+<div class="form-section">
+  <h2>📥 Export Bookings to Excel</h2>
+  <label>
+    From:
+    <input type="date" id="export-start-date" required>
+  </label>
+  <label>
+    To:
+    <input type="date" id="export-end-date" required>
+  </label>
+  <button id="export-button">Download Excel</button>
+</div>
+<div class="form-section">
+  <h2>📋 Manage Bookings</h2>
+  <div id="booking-list">
+    <p>Loading bookings...</p>
+  </div>
+</div>
 
   <!-- FullCalendar and Supabase -->
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
@@ -100,7 +126,39 @@
       'https://fvfhptpkyntqijtpgdse.supabase.co',
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ2ZmhwdHBreW50cWlqdHBnZHNlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEzNDk4OTAsImV4cCI6MjA2NjkyNTg5MH0.HFVj4oZ_acMOmLiL7ix-G8DahuWzmL9mqDkuvjr8HRA'
     );
+const loginSection = document.getElementById("login-section");
+const adminPanel = document.getElementById("admin-panel");
+const loginStatus = document.getElementById("login-status");
 
+async function login() {
+  const email = document.getElementById("login-email").value;
+  const password = document.getElementById("login-password").value;
+
+  const { data, error } = await supabaseClient.auth.signInWithPassword({
+    email,
+    password
+  });
+
+  if (error) {
+    loginStatus.textContent = "❌ Login failed: " + error.message;
+  } else {
+    const role = data.user.user_metadata.role;
+    loginStatus.textContent = "✅ Logged in as " + role;
+
+    loginSection.style.display = "none";
+    adminPanel.style.display = "block";
+
+    window.adminRole = role;
+
+    if (role === "admin_limited") {
+      const cancelButtons = document.querySelectorAll(".cancel-button");
+      cancelButtons.forEach(btn => btn.style.display = "none");
+    }
+
+    loadCalendar(roomTypeSelect.value);
+    if (typeof loadBookingList === "function") loadBookingList();
+  }
+}
     const maxRooms = { double: 3, single: 1 };
     const form = document.getElementById('block-form');
     const status = document.getElementById("status");
@@ -215,7 +273,156 @@ const end_date = form.end_date.value;
       loadCalendar(roomTypeSelect.value);
     });
 
+document.getElementById("export-button").addEventListener("click", async () => {
+  const startDate = document.getElementById("export-start-date").value;
+  const endDate = document.getElementById("export-end-date").value;
 
-  </script>
+  if (!startDate || !endDate) {
+    alert("Please select both start and end dates.");
+    return;
+  }
+
+  // Fetch data from Supabase
+  const { data, error } = await supabaseClient
+    .from("bookings")
+    .select("*")
+    .gte("checkin_date", startDate)
+    .lte("checkout_date", endDate);
+
+  if (error) {
+    console.error("Error fetching bookings:", error);
+    alert("Failed to fetch bookings.");
+    return;
+  }
+
+  if (data.length === 0) {
+    alert("No bookings found for selected range.");
+    return;
+  }
+
+  // Convert to worksheet
+  const worksheet = XLSX.utils.json_to_sheet(data);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Bookings");
+
+  // Trigger download
+  XLSX.writeFile(workbook, `bookings_${startDate}_to_${endDate}.xlsx`);
+});
+async function loadBookingsForAdmin() {
+  const bookingListDiv = document.getElementById("booking-list");
+  bookingListDiv.innerHTML = "<p>Loading bookings...</p>";
+
+  const { data: bookings, error } = await supabaseClient
+    .from("bookings")
+    .select("*")
+    .order("checkin_date", { ascending: true });
+
+  if (error) {
+    bookingListDiv.innerHTML = "<p>❌ Failed to load bookings.</p>";
+    console.error(error);
+    return;
+  }
+
+  if (bookings.length === 0) {
+    bookingListDiv.innerHTML = "<p>No bookings available.</p>";
+    return;
+  }
+
+  const listHtml = bookings
+    .map((b) => {
+      return `
+        <div style="border: 1px solid #ccc; padding: 1rem; margin-bottom: 1rem;">
+          <p><strong>${b.guest_name || "Unknown"}</strong> (${b.guest_email || "No Email"})</p>
+          <p>Room: ${b.room_type}</p>
+          <p>From: ${b.checkin_date} To: ${b.checkout_date}</p>
+          <button onclick="cancelBooking('${b.id}')">❌ Cancel Booking</button>
+        </div>
+      `;
+    })
+    .join("");
+
+  bookingListDiv.innerHTML = listHtml;
+}
+
+async function cancelBooking(id) {
+  if (!confirm("Are you sure you want to cancel this booking?")) return;
+
+  // Get the booking by ID
+  const { data: bookingData, error: fetchError } = await supabaseClient
+    .from("bookings")
+    .select("*")
+    .eq("id", id)
+    .single();
+
+  if (fetchError) {
+    alert("❌ Failed to fetch booking.");
+    console.error(fetchError);
+    return;
+  }
+
+  // Insert into cancelled_bookings
+  const { error: insertError } = await supabaseClient
+    .from("cancelled_bookings")
+    .insert([{ ...bookingData, cancelled_at: new Date().toISOString() }]);
+
+  if (insertError) {
+    alert("❌ Failed to move to cancelled bookings.");
+    console.error(insertError);
+    return;
+  }
+
+  // Delete from bookings
+  const { error: deleteError } = await supabaseClient
+    .from("bookings")
+    .delete()
+    .eq("id", id);
+
+  if (deleteError) {
+    alert("❌ Failed to delete booking.");
+    console.error(deleteError);
+    return;
+  }
+
+  alert("✅ Booking cancelled successfully.");
+  loadBookingsForAdmin();
+  loadCalendar(roomTypeSelect.value); // refresh calendar
+}
+
+// Call on page load
+document.addEventListener('DOMContentLoaded', () => {
+  loadBookingsForAdmin();
+});
+document.addEventListener("DOMContentLoaded", async () => {
+  const { data: { session } } = await supabaseClient.auth.getSession();
+  if (session) {
+    const role = session.user.user_metadata.role;
+
+    loginSection.style.display = "none";
+    adminPanel.style.display = "block";
+    window.adminRole = role;
+
+    if (role === "admin_limited") {
+      const cancelButtons = document.querySelectorAll(".cancel-button");
+      cancelButtons.forEach(btn => btn.style.display = "none");
+    }
+
+    loadCalendar(roomTypeSelect.value);
+    if (typeof loadBookingList === "function") loadBookingList();
+  }
+});
+document.getElementById("logout-btn").addEventListener("click", async () => {
+  const { error } = await supabaseClient.auth.signOut();
+  if (error) {
+    alert("❌ Failed to logout");
+    console.error(error);
+  } else {
+    alert("👋 Logged out successfully");
+    window.location.reload(); // or redirect to login.html if you split it
+  }
+});
+  
+</script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
 </body>
 </html>
