@@ -4,12 +4,21 @@
   <meta charset="UTF-8">
   <title>Admin – Block Room Dates</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet">
   <style>
     body {
       font-family: sans-serif;
-      max-width: 600px;
       margin: 2rem auto;
       padding: 1rem;
+      max-width: 1200px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2rem;
+      justify-content: space-between;
+    }
+    .form-section, .calendar-section {
+      flex: 1 1 45%;
+      min-width: 320px;
     }
     label {
       display: block;
@@ -30,70 +39,183 @@
     #status {
       margin-top: 1rem;
     }
+    #calendar {
+      margin-top: 1rem;
+    }
   </style>
 </head>
 <body>
+ 
+  <div class="form-section">
+    <h2>Block Room Date</h2>
+    <form id="block-form">
+      <label>
+        Room Type:
+        <select name="room_type" id="room_type" required>
+          <option value="double">Deluxe Double</option>
+          <option value="single">Deluxe Single</option>
+        </select>
+      </label>
 
-  <h2>Block Room Date (Admin Panel)</h2>
-  <form id="block-form">
-    <label>
-      Room Type:
-      <select name="room_type" required>
+      <label>
+  Start Date:
+  <input type="date" name="start_date" required>
+</label>
+
+<label>
+  End Date:
+  <input type="date" name="end_date" required>
+</label>
+
+
+      <label>
+        Reason:
+        <input type="text" name="reason" placeholder="e.g. Offline Booking or Maintenance">
+      </label>
+
+      <button type="submit">Block Date</button>
+    </form>
+
+    <p id="status"></p>
+  </div>
+
+  <div class="calendar-section">
+    <h2>📅 Room Status Calendar</h2>
+    <p>
+      View Room Type:
+      <select id="calendar-roomtype">
         <option value="double">Deluxe Double</option>
         <option value="single">Deluxe Single</option>
       </select>
-    </label>
+    </p>
+    <div id="calendar"></div>
+  </div>
 
-    <label>
-      Blocked Date:
-      <input type="date" name="blocked_date" required>
-    </label>
+  <!-- FullCalendar and Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const { createClient } = supabase;
+    const supabaseClient = createClient(
+      'https://fvfhptpkyntqijtpgdse.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ2ZmhwdHBreW50cWlqdHBnZHNlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEzNDk4OTAsImV4cCI6MjA2NjkyNTg5MH0.HFVj4oZ_acMOmLiL7ix-G8DahuWzmL9mqDkuvjr8HRA'
+    );
 
-    <label>
-      Reason:
-      <input type="text" name="reason" placeholder="e.g. Offline Booking or Maintenance">
-    </label>
-
-    <button type="submit">Block Date</button>
-  </form>
-
-  <p id="status"></p>
-
-  <!-- Supabase JS -->
- <!-- ✅ Load Supabase SDK -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-<!-- ✅ Then create the client the RIGHT way for version 2 -->
-<script>
-  const { createClient } = supabase;
-
-  const supabaseClient = createClient(
-    'https://fvfhptpkyntqijtpgdse.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ2ZmhwdHBreW50cWlqdHBnZHNlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEzNDk4OTAsImV4cCI6MjA2NjkyNTg5MH0.HFVj4oZ_acMOmLiL7ix-G8DahuWzmL9mqDkuvjr8HRA'
-  );
-
-  document.getElementById('block-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const room_type = e.target.room_type.value;
-    const blocked_date = e.target.blocked_date.value;
-    const reason = e.target.reason.value;
-
-    const { error } = await supabaseClient.from('blocked_dates').insert([
-      { room_type, blocked_date, reason }
-    ]);
-
+    const maxRooms = { double: 3, single: 1 };
+    const form = document.getElementById('block-form');
     const status = document.getElementById("status");
+    const calendarEl = document.getElementById('calendar');
+    const roomTypeSelect = document.getElementById('room_type');
+    const calendarRoomTypeSelect = document.getElementById('calendar-roomtype');
+    let calendar;
 
-    if (error) {
-      console.error(error);
-      status.textContent = "❌ Failed to block date.";
-    } else {
-      status.textContent = "✅ Date successfully blocked.";
-      e.target.reset();
+    async function loadCalendar(roomType) {
+      const bookingsResponse = await supabaseClient
+        .from('bookings')
+        .select('checkin_date, checkout_date')
+        .eq('room_type', roomType);
+
+      const blocksResponse = await supabaseClient
+        .from('blocked_dates')
+        .select('start_date, end_date, reason')
+        .eq('room_type', roomType);
+
+      const bookings = bookingsResponse.data || [];
+      const blocks = blocksResponse.data || [];
+
+      const eventMap = {};
+
+      bookings.forEach(b => {
+        const start = new Date(b.checkin_date);
+        const end = new Date(b.checkout_date);
+        for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+          const key = new Date(d).toISOString().split("T")[0];
+          if (!eventMap[key]) eventMap[key] = { booked: 0, blocked: null };
+          eventMap[key].booked += 1;
+        }
+      });
+
+      blocks.forEach(b => {
+        const start = new Date(b.start_date);
+        const end = new Date(b.end_date || b.start_date);
+        for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+          const key = new Date(d).toISOString().split("T")[0];
+          if (!eventMap[key]) eventMap[key] = { booked: 0, blocked: null };
+          eventMap[key].blocked = b.reason || "Blocked";
+        }
+      });
+
+      const events = [];
+      for (const date in eventMap) {
+        const { booked, blocked } = eventMap[date];
+        if (blocked) {
+          events.push({
+            title: `🔒 ${blocked}`,
+            start: date,
+            allDay: true,
+            color: "#f8d7da"
+          });
+        } else if (booked >= maxRooms[roomType]) {
+          events.push({
+            title: `🟠 Fully Booked (${booked})`,
+            start: date,
+            allDay: true,
+            color: "#ffeeba"
+          });
+        } else if (booked > 0) {
+          events.push({
+            title: `🟢 ${booked}/${maxRooms[roomType]} Booked`,
+            start: date,
+            allDay: true,
+            color: "#d4edda"
+          });
+        }
+      }
+
+      if (calendar) {
+        calendar.removeAllEvents();
+        calendar.addEventSource(events);
+      } else {
+        calendar = new FullCalendar.Calendar(calendarEl, {
+          initialView: 'dayGridMonth',
+          events: events,
+          height: "auto"
+        });
+        calendar.render();
+      }
     }
-  });
-</script>
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const room_type = form.room_type.value;
+      const start_date = form.start_date.value;
+const end_date = form.end_date.value;
+
+      const reason = form.reason.value;
+      const { error } = await supabaseClient.from('blocked_dates').insert([
+        { room_type, start_date, end_date, reason }
+
+      ]);
+      const status = document.getElementById("status");
+      if (error) {
+        console.error(error);
+        status.textContent = "❌ Failed to block date.";
+      } else {
+        status.textContent = "✅ Date successfully blocked.";
+        form.reset();
+        loadCalendar(room_type); // refresh calendar
+      }
+    });
+
+    roomTypeSelect.addEventListener('change', () => {
+      loadCalendar(roomTypeSelect.value);
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+      loadCalendar(roomTypeSelect.value);
+    });
 
 
+  </script>
 </body>
 </html>
