@@ -170,6 +170,32 @@ if (bookedCount >= maxRooms) {
           alert("✅ Booking confirmed!");
           window.location.href = "index.html";
         }
+if (!error) {
+  // Call backend to send email
+  fetch("/.netlify/functions/send-email", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      name,
+      email,
+      phone,
+      room_type,
+      checkin,
+      checkout
+    })
+  })
+  .then(res => res.json())
+  .then(() => {
+    alert("✅ Booking confirmed! Confirmation email sent.");
+    window.location.href = "index.html";
+  })
+  .catch(err => {
+    console.error("Email error:", err);
+    alert("✅ Booking saved! (Email failed)");
+    window.location.href = "index.html";
+  });
+}
+
       });
     }
   </script>
