@@ -265,12 +265,13 @@ const end_date = form.end_date.value;
       }
     });
 
-    roomTypeSelect.addEventListener('change', () => {
-      loadCalendar(roomTypeSelect.value);
-    });
+    calendarRoomTypeSelect.addEventListener('change', () => {
+  loadCalendar(calendarRoomTypeSelect.value);
+});
+
 
     document.addEventListener('DOMContentLoaded', () => {
-      loadCalendar(roomTypeSelect.value);
+      loadCalendar(calendarRoomTypeSelect.value);
     });
 
 document.getElementById("export-button").addEventListener("click", async () => {
@@ -385,7 +386,7 @@ async function cancelBooking(id) {
 
   alert("✅ Booking cancelled successfully.");
   loadBookingsForAdmin();
-  loadCalendar(roomTypeSelect.value); // refresh calendar
+  loadCalendar(calendarRoomTypeSelect.value); // refresh calendar
 }
 
 // Call on page load
