@@ -33,7 +33,7 @@ exports.handler = async (event, context) => {
     body: JSON.stringify({
       to: [{ email, name }],
       templateId: 1,
-      params: params,
+      params,
       sender: {
         name: "Vista Inn",
         email: "your_verified@yourdomain.com"
@@ -48,7 +48,7 @@ exports.handler = async (event, context) => {
     };
   } else {
     const error = await response.json();
-    console.error("❌ Brevo error:", error);
+    console.error("❌ Brevo API error:", error);
     return {
       statusCode: 500,
       body: JSON.stringify({ error })
