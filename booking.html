@@ -172,7 +172,7 @@ if (bookedCount >= maxRooms) {
         }
 if (!error) {
   // Call backend to send email
-  fetch("/.netlify/functions/send-email", {
+  fetch("/vistainn.netlify.app/.netlify/functions/send-email", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
