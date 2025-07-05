@@ -32,7 +32,7 @@ exports.handler = async (event, context) => {
       },
       sender: {
         name: "Vista Inn",
-        email: "your_verified@yourdomain.com"
+        email: "vista.ranthambore@gmail.com"
       }
     })
   });
