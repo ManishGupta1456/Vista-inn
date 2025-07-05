@@ -43,6 +43,7 @@ exports.handler = async (event, context) => {
     };
   } else {
     const err = await brevoResponse.json();
+    console.error("❌ Brevo API error:", err);
     return {
       statusCode: 500,
       body: JSON.stringify({ error: err })
