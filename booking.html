@@ -186,6 +186,7 @@ if (!error) {
   })
   .then(res => res.json())
   .then(() => {
+	  console.log("📨 Email function response:", result);
     alert("✅ Booking confirmed! Confirmation email sent.");
     window.location.href = "index.html";
   })
