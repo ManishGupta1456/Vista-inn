@@ -22,7 +22,8 @@ exports.handler = async (event, context) => {
       to: [{ email, name }],
       templateId: 1,
       params: {
-        guest_name: name,
+        console.log("📨 Sending with params:", {
+         guest_name: name,
         guest_email: email,
         guest_phone: phone,
         room_type,
