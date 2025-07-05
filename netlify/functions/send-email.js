@@ -1,7 +1,8 @@
 const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
 
 exports.handler = async (event, context) => {
- console.log("📨 Received email request:", event.body);
+  console.log("📦 Raw request body:", event.body);
+
   if (event.httpMethod !== "POST") {
     return {
       statusCode: 405,
@@ -11,7 +12,18 @@ exports.handler = async (event, context) => {
 
   const { name, email, phone, room_type, checkin, checkout } = JSON.parse(event.body);
 
-  const brevoResponse = await fetch("https://api.brevo.com/v3/smtp/email", {
+  const params = {
+    guest_name: name,
+    guest_email: email,
+    guest_phone: phone,
+    room_type,
+    checkin_date: checkin,
+    checkout_date: checkout
+  };
+
+  console.log("📨 Sending Brevo email with params:", params);
+
+  const response = await fetch("https://api.brevo.com/v3/smtp/email", {
     method: "POST",
     headers: {
       accept: "application/json",
@@ -21,33 +33,25 @@ exports.handler = async (event, context) => {
     body: JSON.stringify({
       to: [{ email, name }],
       templateId: 1,
-      params: {
-        console.log("📨 Sending with params:", {
-         guest_name: name,
-        guest_email: email,
-        guest_phone: phone,
-        room_type,
-        checkin_date: checkin,
-        checkout_date: checkout
-      },
+      params: params,
       sender: {
         name: "Vista Inn",
-        email: "vista.ranthambore@gmail.com"
+        email: "your_verified@yourdomain.com"
       }
     })
   });
 
-  if (brevoResponse.ok) {
+  if (response.ok) {
     return {
       statusCode: 200,
       body: JSON.stringify({ message: "Email sent" })
     };
   } else {
-    const err = await brevoResponse.json();
-    console.error("❌ Brevo API error:", err);
+    const error = await response.json();
+    console.error("❌ Brevo error:", error);
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: err })
+      body: JSON.stringify({ error })
     };
   }
 };
