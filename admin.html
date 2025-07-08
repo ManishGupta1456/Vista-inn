@@ -8,6 +8,7 @@
   <style>
     body {
       font-family: sans-serif;
+      font-size: 20px;
       margin: 2rem auto;
       padding: 1rem;
       max-width: 1200px;
@@ -83,7 +84,31 @@
 
       <button type="submit">Block Date</button>
     </form>
+<hr>
+<h2>Set Room Price</h2>
+<form id="price-form">
+  <label>
+    Room Type:
+    <select name="room_type" required>
+      <option value="double">Deluxe Double</option>
+      <option value="single">Deluxe Single</option>
+    </select>
+  </label>
 
+  <label>
+    Date:
+    <input type="date" name="price_date" required>
+  </label>
+
+  <label>
+    Price (₹):
+    <input type="number" name="price" required min="500" step="10">
+  </label>
+
+  <button type="submit">Save Price</button>
+</form>
+
+<p id="price-status"></p>
     <p id="status"></p>
   </div>
 
@@ -211,21 +236,24 @@ async function login() {
             title: `🔒 ${blocked}`,
             start: date,
             allDay: true,
-            color: "#f8d7da"
+            color: "#f8d7da",
+            textColor: "black"
           });
         } else if (booked >= maxRooms[roomType]) {
           events.push({
             title: `🟠 Fully Booked (${booked})`,
             start: date,
             allDay: true,
-            color: "#ffeeba"
+            color: "#ffeeba",
+	    textColor: "black"
           });
         } else if (booked > 0) {
           events.push({
             title: `🟢 ${booked}/${maxRooms[roomType]} Booked`,
             start: date,
             allDay: true,
-            color: "#d4edda"
+            color: "#d4edda",
+	    textColor: "black"
           });
         }
       }
@@ -264,6 +292,54 @@ const end_date = form.end_date.value;
         loadCalendar(room_type); // refresh calendar
       }
     });
+
+  const priceForm = document.getElementById("price-form");
+  const priceStatus = document.getElementById("price-status");
+
+  priceForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const room_type = priceForm.room_type.value;
+    const date = priceForm.price_date.value;
+    const price = parseFloat(priceForm.price.value);
+
+    // Check if entry for this room_type + date already exists
+    const { data: existing } = await supabaseClient
+      .from("room_prices")
+      .select("*")
+      .eq("room_type", room_type)
+      .eq("date", date);
+
+    if (existing.length > 0) {
+      // 🔄 Update existing price
+      const { error } = await supabaseClient
+        .from("room_prices")
+        .update({ price })
+        .eq("room_type", room_type)
+        .eq("date", date);
+
+      if (error) {
+        priceStatus.textContent = "❌ Failed to update price.";
+        console.error(error);
+      } else {
+        priceStatus.textContent = "✅ Price updated successfully.";
+        priceForm.reset();
+      }
+    } else {
+      // ➕ Insert new price
+      const { error } = await supabaseClient
+        .from("room_prices")
+        .insert([{ room_type, date, price }]);
+
+      if (error) {
+        priceStatus.textContent = "❌ Failed to insert price.";
+        console.error(error);
+      } else {
+        priceStatus.textContent = "✅ Price saved successfully.";
+        priceForm.reset();
+      }
+    }
+  });
 
     calendarRoomTypeSelect.addEventListener('change', () => {
   loadCalendar(calendarRoomTypeSelect.value);
