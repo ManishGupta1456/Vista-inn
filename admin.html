@@ -411,8 +411,9 @@ async function loadBookingsForAdmin() {
     .map((b) => {
       return `
         <div style="border: 1px solid #ccc; padding: 1rem; margin-bottom: 1rem;">
-          <p><strong>${b.guest_name || "Unknown"}</strong> (${b.guest_email || "No Email"})</p>
-          <p>Room: ${b.room_type}</p>
+          <p><strong>${b.guest_name || "Unknown"}</strong></p>
+        <p>📧 ${b.guest_email || "No Email"}<br>📞 ${b.phone || "No Phone"}</p>
+        <p>Room: ${b.room_type}</p>
           <p>From: ${b.checkin_date} To: ${b.checkout_date}</p>
           <button onclick="cancelBooking('${b.id}')">❌ Cancel Booking</button>
         </div>
