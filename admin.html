@@ -429,8 +429,9 @@ async function cancelBooking(id) {
     .from("bookings")
     .select("*")
     .eq("id", id)
-    .single();
-
+    .single()
+   .gte("checkout_date", today)
+  .order("checkin_date", { ascending: true });
   if (fetchError) {
     alert("❌ Failed to fetch booking.");
     console.error(fetchError);
