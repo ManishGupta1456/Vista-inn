@@ -386,12 +386,14 @@ document.getElementById("export-button").addEventListener("click", async () => {
   XLSX.writeFile(workbook, `bookings_${startDate}_to_${endDate}.xlsx`);
 });
 async function loadBookingsForAdmin() {
+  const today = new Date().toISOString().split("T")[0];
   const bookingListDiv = document.getElementById("booking-list");
   bookingListDiv.innerHTML = "<p>Loading bookings...</p>";
 
   const { data: bookings, error } = await supabaseClient
     .from("bookings")
-    .select("*").gte("checkout_date", today)
+    .select("*")
+    .gte("checkout_date", today)
     .order("checkin_date", { ascending: true });
 
   if (error) {
