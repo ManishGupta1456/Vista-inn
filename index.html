@@ -162,6 +162,7 @@
     const dates = [];
     let curr = new Date(start);
     const last = new Date(end);
+    last.setDate(last.getDate() - 1);
     while (curr <= last) {
       dates.push(curr.toISOString().split("T")[0]);
       curr.setDate(curr.getDate() + 1);
