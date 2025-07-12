@@ -391,7 +391,7 @@ async function loadBookingsForAdmin() {
 
   const { data: bookings, error } = await supabaseClient
     .from("bookings")
-    .select("*")
+    .select("*").gte("checkout_date", today)
     .order("checkin_date", { ascending: true });
 
   if (error) {
@@ -429,9 +429,7 @@ async function cancelBooking(id) {
     .from("bookings")
     .select("*")
     .eq("id", id)
-    .single()
-   .gte("checkout_date", today)
-  .order("checkin_date", { ascending: true });
+    .single();
   if (fetchError) {
     alert("❌ Failed to fetch booking.");
     console.error(fetchError);
