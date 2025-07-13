@@ -10,7 +10,7 @@ exports.handler = async (event, context) => {
     };
   }
 
-  const { name, email, phone, room_type, checkin, checkout } = JSON.parse(event.body);
+  const { name, email, phone, room_type, checkin, checkout, booking_id } = JSON.parse(event.body);
 
   const brevoResponse = await fetch("https://api.brevo.com/v3/smtp/email", {
     method: "POST",
