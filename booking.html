@@ -187,7 +187,7 @@ if (bookedCount >= maxRooms) {
           checkout_date: checkout,
           guest_name: name,
           guest_email: email,
-	  guest_phone: phone
+	  guest_phone: phone,
 	  booking_id: booking_id  // ✅ Include new Booking ID
         }]);
 
@@ -209,7 +209,8 @@ if (!error) {
       phone,
       room_type,
       checkin,
-      checkout
+      checkout,
+      booking_id
     })
   })
   .then(res => res.json())
