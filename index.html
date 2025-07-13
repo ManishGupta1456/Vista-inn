@@ -46,15 +46,15 @@
   <form id="search-form" class="search-form">
   <label>
     Check-in:
-    <input type="date" name="checkin" required>
+    <input type="date" name="checkin" required min="">
   </label>
   <label>
     Check-out:
-    <input type="date" name="checkout" required>
+    <input type="date" name="checkout" required min="">
   </label>
   <label>
     Guests:
-    <input type="number" name="guests" min="1" max="10" required>
+    <input type="number" name="guests" min="1" max="2" required>
   </label>
   <label>
     Room Type:
@@ -175,7 +175,9 @@
 
       const dateRange = getDateRange(checkin, checkout);
       const maxRooms = room_type === "double" ? 3 : 1;
-
+      const today = new Date().toISOString().split("T")[0];
+      document.querySelector('input[name="checkin"]').min = today;
+      document.querySelector('input[name="checkout"]').min = today;
       let totalPrice = 0;
       let available = true;
 
