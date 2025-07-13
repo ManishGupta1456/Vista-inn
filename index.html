@@ -178,6 +178,16 @@
       const today = new Date().toISOString().split("T")[0];
       document.querySelector('input[name="checkin"]').min = today;
       document.querySelector('input[name="checkout"]').min = today;
+     if (checkin < today) {
+  alert("❌ Check-in date cannot be in the past.");
+  return;
+}
+
+if (checkin >= checkout) {
+  alert("❌ Check-out date must be after check-in date.");
+  return;
+}
+      
       let totalPrice = 0;
       let available = true;
 
