@@ -179,7 +179,8 @@ if (bookedCount >= maxRooms) {
           }
         }
 
-        // Save the booking
+        const booking_id = await generateUniqueBookingID("A");  // Prefix A for 2025
+	      // Save the booking
         const { error } = await supabaseClient.from('bookings').insert([{
           room_type,
           checkin_date: checkin,
@@ -187,13 +188,14 @@ if (bookedCount >= maxRooms) {
           guest_name: name,
           guest_email: email,
 	  guest_phone: phone
+	  booking_id: booking_id  // ✅ Include new Booking ID
         }]);
 
         if (error) {
           console.error(error);
           alert("❌ Booking failed.");
         } else {
-          alert("✅ Booking confirmed!");
+          alert(`✅ Booking confirmed!\nBooking ID: ${booking_id}`);
          
         }
 if (!error) {
