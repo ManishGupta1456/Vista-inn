@@ -57,7 +57,33 @@
       'https://fvfhptpkyntqijtpgdse.supabase.co',
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ2ZmhwdHBreW50cWlqdHBnZHNlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEzNDk4OTAsImV4cCI6MjA2NjkyNTg5MH0.HFVj4oZ_acMOmLiL7ix-G8DahuWzmL9mqDkuvjr8HRA'
     );
+// 🔤 Step 1: Generate 5-char alphanumeric Booking ID with prefix
+function generateBookingID(prefix = "A") {
+  const chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  let id = prefix;
+  for (let i = 0; i < 5; i++) {
+    id += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return id;
+}
 
+// 🔁 Step 2: Ensure it's unique before saving
+async function generateUniqueBookingID(prefix = "A") {
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const bookingID = generateBookingID(prefix);
+
+    const { data, error } = await supabaseClient
+      .from("bookings")
+      .select("id")
+      .eq("booking_id", bookingID);
+
+    if (!error && data.length === 0) {
+      return bookingID;
+    }
+  }
+
+  throw new Error("❌ Could not generate a unique booking ID.");
+}
 window.addEventListener('DOMContentLoaded', () => {
   const roomTypeSelect = document.getElementById('roomtype');
   const guestsInput = document.getElementById('guests');
