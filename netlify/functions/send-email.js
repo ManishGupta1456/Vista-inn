@@ -28,7 +28,8 @@ exports.handler = async (event, context) => {
         guest_phone: phone,
         room_type,
         checkin_date: checkin,
-        checkout_date: checkout
+        checkout_date: checkout,
+        booking_id
       },
       sender: {
         name: "Vista Inn",
