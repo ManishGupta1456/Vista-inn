@@ -41,6 +41,8 @@
           <option value="single">Deluxe Single Room</option>
         </select>
       </label>
+  <p id="live-price" style="font-weight: bold; margin: 10px 0;"></p>
+
       <button type="submit">Confirm Booking</button>
     </form>
   </main>
@@ -84,6 +86,37 @@ async function generateUniqueBookingID(prefix = "A") {
 
   throw new Error("❌ Could not generate a unique booking ID.");
 }
+
+async function calculateLivePrice() {
+  const room_type = form.roomtype.value;
+  const checkin = form.checkin.value;
+  const checkout = form.checkout.value;
+
+  const display = document.getElementById("live-price");
+  display.textContent = "";
+
+  if (!checkin || !checkout || checkin >= checkout) return;
+
+  const dateRange = getDateRange(checkin, checkout);
+  let total = 0;
+
+  for (const date of dateRange) {
+    const { data, error } = await supabaseClient
+      .from("room_prices")
+      .select("price")
+      .eq("room_type", room_type)
+      .eq("date", date);
+
+    if (data && data.length > 0) {
+      total += parseFloat(data[0].price);
+    } else {
+      total += room_type === "double" ? 2000 : 1200; // default
+    }
+  }
+
+  display.textContent = `💰 Total Price: ₹${total}`;
+}
+
 window.addEventListener('DOMContentLoaded', () => {
   const roomTypeSelect = document.getElementById('roomtype');
   const guestsInput = document.getElementById('guests');
@@ -101,6 +134,9 @@ window.addEventListener('DOMContentLoaded', () => {
 
     // 👇 Also run once on load to set correct guest limit
     roomTypeSelect.dispatchEvent(new Event('change'));
+form.checkin.addEventListener("change", calculateLivePrice);
+form.checkout.addEventListener("change", calculateLivePrice);
+form.roomtype.addEventListener("change", calculateLivePrice);
   }
 });
     function getDateRange(start, end) {
@@ -116,8 +152,8 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 
     const form = document.querySelector('form');
-    if (form) {
-      form.addEventListener('submit', async (e) => {
+    if (form) {   
+form.addEventListener('submit', async (e) => {
         e.preventDefault();
   const room_type = form.roomtype.value;
   const guests = parseInt(form.guests.value);
@@ -149,7 +185,8 @@ if (checkin >= checkout) {
   return;
 }
 
-        const datesToCheck = getDateRange(checkin, checkout);
+
+     const datesToCheck = getDateRange(checkin, checkout);
 
         for (const date of datesToCheck) {
           try {
