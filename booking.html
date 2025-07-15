@@ -246,7 +246,7 @@ if (bookedCount >= maxRooms) {
           console.error(error);
           alert("❌ Booking failed.");
         } else {
-          alert(`✅ Booking confirmed!\nBooking ID: ${booking_id}`);
+          window.location.href = `confirmation.html?booking_id=${booking_id}`;
          
         }
 if (!error) {
@@ -264,11 +264,7 @@ if (!error) {
       booking_id
     })
   })
-  .then(res => res.json())
-  .then(() => {
-    alert("✅ Booking confirmed! Confirmation email sent.");
-    window.location.href = "index.html";
-  })
+ 
   .catch(err => {
     console.error("❌ Function failed:", err); // shows full error in console
   alert("❌ Email function error: " + err.message);
