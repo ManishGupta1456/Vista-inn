@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Booking Confirmed – Vista Inn</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main style="padding: 2rem;">
+    <h1>✅ Booking Confirmed</h1>
+    <div id="confirmation-details">Loading...</div>
+    <button onclick="window.print()">🖨️ Print This Page</button>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const { createClient } = supabase;
+    const supabaseClient = createClient(
+      'https://fvfhptpkyntqijtpgdse.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ2ZmhwdHBreW50cWlqdHBnZHNlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEzNDk4OTAsImV4cCI6MjA2NjkyNTg5MH0.HFVj4oZ_acMOmLiL7ix-G8DahuWzmL9mqDkuvjr8HRA'
+    );
+
+    function getDateRange(start, end) {
+      const dates = [];
+      const curr = new Date(start);
+      const last = new Date(end);
+      last.setDate(last.getDate() - 1);
+      while (curr <= last) {
+        dates.push(curr.toISOString().split("T")[0]);
+        curr.setDate(curr.getDate() + 1);
+      }
+      return dates;
+    }
+
+    async function loadBooking() {
+      const params = new URLSearchParams(window.location.search);
+      const booking_id = params.get("booking_id");
+      if (!booking_id) {
+        document.getElementById("confirmation-details").textContent = "❌ Invalid booking.";
+        return;
+      }
+
+      const { data, error } = await supabaseClient
+        .from("bookings")
+        .select("*")
+        .eq("booking_id", booking_id)
+        .single();
+
+      if (error || !data) {
+        document.getElementById("confirmation-details").textContent = "❌ Booking not found.";
+        return;
+      }
+
+      // ✅ Secure price lookup
+      let total_price = 0;
+      const dates = getDateRange(data.checkin_date, data.checkout_date);
+      for (const date of dates) {
+        const { data: priceData } = await supabaseClient
+          .from("room_prices")
+          .select("price")
+          .eq("room_type", data.room_type)
+          .eq("date", date);
+
+        if (priceData.length > 0) {
+          total_price += parseFloat(priceData[0].price);
+        } else {
+          total_price += data.room_type === "double" ? 2000 : 1200;
+        }
+      }
+
+      document.getElementById("confirmation-details").innerHTML = `
+        <p><strong>Booking ID:</strong> ${data.booking_id}</p>
+        <p><strong>Name:</strong> ${data.guest_name}</p>
+        <p><strong>Email:</strong> ${data.guest_email}</p>
+        <p><strong>Phone:</strong> ${data.guest_phone || "-"}</p>
+        <p><strong>Room Type:</strong> ${data.room_type}</p>
+        <p><strong>Check-in:</strong> ${data.checkin_date}</p>
+        <p><strong>Check-out:</strong> ${data.checkout_date}</p>
+        <p><strong>Guests:</strong> ${data.guests || "-"}</p>
+        <p><strong>Total Price:</strong> ₹${total_price}</p>
+      `;
+    }
+
+    loadBooking();
+  </script>
+</body>
+</html>
