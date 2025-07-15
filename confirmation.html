@@ -1,17 +1,120 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Booking Confirmed – Vista Inn</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <title>Booking Confirmation – Vista Inn</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    body {
+      font-family: "Segoe UI", sans-serif;
+      background: #f9f9f9;
+      padding: 2rem;
+      color: #333;
+    }
+
+    .confirmation-container {
+      max-width: 800px;
+      margin: auto;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      padding: 2rem;
+    }
+
+    .hotel-header {
+      display: flex;
+      align-items: center;
+      border-bottom: 2px solid #eee;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+    }
+
+    .hotel-header img {
+      height: 60px;
+      margin-right: 1rem;
+    }
+
+    .hotel-header h1 {
+      font-size: 1.8rem;
+      margin: 0;
+    }
+
+    .section-title {
+      font-size: 1.3rem;
+      margin: 1.5rem 0 1rem;
+      color: #444;
+    }
+
+    .info-box {
+      background: #f4f4f4;
+      padding: 1rem;
+      border-radius: 6px;
+    }
+
+    .info-box p {
+      margin: 0.5rem 0;
+    }
+
+    .terms {
+      font-size: 0.9rem;
+      margin-top: 2rem;
+      color: #666;
+    }
+
+    .footer {
+      margin-top: 2rem;
+      font-size: 0.95rem;
+      text-align: center;
+      color: #888;
+    }
+
+    .print-btn {
+      display: inline-block;
+      margin-top: 1.5rem;
+      background: #2e3b4e;
+      color: white;
+      padding: 0.6rem 1.2rem;
+      border: none;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+
+    @media print {
+      .print-btn {
+        display: none;
+      }
+    }
+  </style>
 </head>
 <body>
-  <main style="padding: 2rem;">
-    <h1>✅ Booking Confirmed</h1>
-    <div id="confirmation-details">Loading...</div>
-    <button onclick="window.print()">🖨️ Print This Page</button>
-  </main>
+  <div class="confirmation-container">
+    <div class="hotel-header">
+      <img src="images/logo.png" alt="Hotel Logo" />
+      <h1>Hotel Vista Inn</h1>
+    </div>
+
+    <div id="confirmation-details">
+      <p>Loading your booking...</p>
+    </div>
+
+    <button class="print-btn" onclick="window.print()">🖨️ Print Confirmation</button>
+
+    <div class="terms">
+      <h3 class="section-title">Terms & Conditions</h3>
+      <ul>
+        <li>Please carry a valid government ID at check-in.</li>
+        <li>Check-in: 12:00 PM | Check-out: 11:00 AM</li>
+        <li>Cancellation charges may apply as per policy.</li>
+        <li>Early check-in / late checkout subject to availability.</li>
+      </ul>
+    </div>
+
+    <div class="footer">
+      Vista Inn, Ranthambore Road, Sawai Madhopur – Rajasthan<br />
+      📞 +91-99820-77024 &nbsp; | &nbsp; ✉️ info@vistainn.com
+    </div>
+  </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
