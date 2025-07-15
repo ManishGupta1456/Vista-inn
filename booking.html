@@ -264,10 +264,13 @@ if (!error) {
       booking_id
     })
   })
- .then(res => res.json())
-  .then(() => {
-        window.location.href = `confirmation.html?booking_id=${booking_id}`;
-  })
+ .then(res => {
+  if (!res.ok) throw new Error("Email function failed");
+  return res.text();  // don't use .json()
+})
+.then(() => {
+  window.location.href = `confirmation.html?booking_id=${booking_id}`;
+})
 
   .catch(err => {
     console.error("❌ Function failed:", err); // shows full error in console
