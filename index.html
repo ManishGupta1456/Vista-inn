@@ -2,46 +2,61 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Hotel Vista Inn – Ranthambore</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link
-    rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-  />  
-<link rel="stylesheet" href="style.css">
+  <title>Hotel Vista Inn – Near Ranthambore National Park</title>
+  <meta name="description" content="Hotel Vista Inn offers comfortable accommodation near Ranthambore National Park. Book your stay today."/>
+  <meta property="og:title" content="Hotel Vista Inn – Near Ranthambore National Park" />
+  <meta property="og:description" content="Experience nature and luxury at Hotel Vista Inn located just minutes from Ranthambore Tiger Reserve." />
+  <meta property="og:image" content="images/room1.avif" />
+  <meta property="og:url" content="https://yourhotelwebsite.com " />
+  <meta name="twitter:card" content="summary_large_image" />
+
+  <!-- Favicon -->
+  <link rel="icon" href="favicon/favicon.ico" type="image/x-icon">
+<link rel="icon" type="image/png" sizes="16x16" href="favicon/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon/favicon-32x32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="favicon/favicon-180x180.png">
+<link rel="manifest" href="favicon/site.webmanifest">
+
+  <!-- Font Awesome CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css "/>
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="style.css" />
 </head>
 
 
+
 <body>
-  <header>
+ <header class="site-header">
     <div class="brand">
-  <img src="images/logo.png" alt="Hotel Vista Inn Logo" class="logo-img">
-  <h1 class="hotel-name">Hotel Vista Inn</h1>
-</div>
+      <img src="images/logo.png" alt="Hotel Vista Inn Logo" class="logo-img">
+      <h1 class="hotel-name">Hotel Vista Inn</h1>
+    </div>
     <p>Ranthambore, Sawai Madhopur</p>
-    <nav>
-      <a href="#">Home</a>
+    <nav class="main-nav">
+      <a href="index.html">Home</a>
       <a href="#rooms">Rooms</a>
       <a href="offers.html">Offers</a>
-      <a href="#contact">Contact</a>
+      <a href="contact.html">Contact</a>
     </nav>
   </header>
 
-  <main>
-    <section class="hero">
-  <div class="slideshow">
-    <img src="images/room1.avif" alt="Room 1">
-    <img src="images/room2.avif" alt="Room 2">
-    <img src="images/tiger1.jpg" alt="Lobby">
-    <img src="images/tiger2.jpg" alt="Suite">
-  </div>
-  <div class="overlay-text">
-    <h2>Welcome to Vista Inn</h2>
-    <p>Your comfortable stay near Ranthambore National Park.</p>
-  </div>
-</section>
 
-<section class="availability">
+ <main>
+    <section class="hero-section">
+      <div class="slideshow-container">
+        <img src="images/room1.avif" alt="Deluxe Room 1" class="slide">
+        <img src="images/room2.avif" alt="Deluxe Room 2" class="slide">
+        <img src="images/tiger1.jpg" alt="Hotel Lobby" class="slide">
+        <img src="images/tiger2.jpg" alt="Suite View" class="slide">
+      </div>
+      <div class="overlay-text">
+        <h2>Welcome to Hotel Vista Inn</h2>
+        <p>Your peaceful retreat near the wild beauty of Ranthambore National Park.</p>
+      </div>
+    </section>
+
+<section class="availability-section">
   <h2>Check Room Availability</h2>
   <form id="search-form" class="search-form">
   <label>
@@ -68,20 +83,20 @@
 <div id="availability-result"></div>
 
 </section>
-<section class="experience">
-  <h2>Experience the Wild & Comfort</h2>
+<section class="experience-section">
+  <h2>Experience Nature and Comfort</h2>
   <p>
-    Nestled near the edge of the majestic <strong>Ranthambhore National Park</strong>, Vista Inn offers you the perfect balance of comfort and adventure.
-    Whether you're here for a thrilling wildlife safari or a peaceful getaway, our inn is the ideal base to explore nature at its best.
+    Nestled near the edge of the majestic <strong>Ranthambhore National Park</strong>, Hotel Vista Inn offers you the perfect balance of comfort and adventure.
+    Whether you're here for a thrilling wildlife and tiger safari or a peaceful getaway into nature, our inn provides the perfect base for unforgettable memories.
   </p>
-  <h3>What Our Guests Can Expect:</h3>
+  <h3>What You'll Love About Staying With Us:</h3>
   <ul>
-    <li>🛏️ Comfortable, air-conditioned rooms with modern amenities</li>
-    <li>🐅 Guided safaris to spot tigers, leopards, and exotic birds</li>
-    <li>🌄 Scenic views and peaceful surroundings</li>
-    <li>🍲 Delicious Rajasthani and Indian cuisine</li>
-    <li>🔥 Night bonfires and storytelling under the stars</li>
-  </ul>
+    <li>🛏️ Spacious, air-conditioned rooms with premium amenities</li>
+        <li>🐅 Expert-guided safaris into Ranthambore's wilderness</li>
+        <li>🌄 Stunning natural views and serene surroundings</li>
+        <li>🍲 Authentic Rajasthani meals crafted by local chefs</li>
+        <li>🔥 Cozy bonfire nights under starlit skies</li>
+      </ul>
 
   <h3>About Ranthambhore National Park:</h3>
   <p>
@@ -115,18 +130,18 @@
 
   <footer>
     <p>© 2025 Vista Inn. All rights reserved.</p>
+  <p><a href="index.html">Back to Home</a></p>
   </footer>
 
   <script>
     // Simple slideshow
-    const slides = document.querySelectorAll(".slideshow img");
+    const slides = document.querySelectorAll(".slide");
     let index = 0;
     setInterval(() => {
-      slides.forEach((img, i) => {
-        img.style.opacity = (i === index) ? "1" : "0";
-      });
-      index = (index + 1) % slides.length;
-    }, 4000);
+    slides.forEach(slide => slide.classList.remove("active"));
+    slides[index].classList.add("active");
+    index = (index + 1) % slides.length;
+  }, 4000);
   </script>
   
 <a
