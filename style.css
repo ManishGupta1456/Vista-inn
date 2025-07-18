@@ -1,37 +1,72 @@
 body {
-  font-family: Georgia, Bradley Hand ITC;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   margin: 0;
   padding: 0;
-  background-color: #fdfdfd;
+  line-height: 1.6;
+  background-color: #f9f9f9;
+  color: #333;
 }
 
-header {
-  background-color: #2e3b4e;
+.site-header {
+  background-color: #1d2938;
   color: white;
   text-align: center;
-  padding: 1rem 0;
+  padding: 1.5rem 1rem;
 }
 
-nav {
-  margin-top: 1rem;
+.brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
 }
 
-nav a {
-  display: inline-block;
+.logo-img {
+  height: 70px;
+  width: auto;
+  border-radius: 8px;
+}
+
+.hotel-name {
+  font-size: 2.5rem;
+  font-weight: 700;
   color: #fff;
-  margin: 0 15px;
-  text-decoration: none;
-  font-weight: bold;
-  padding: 0.5rem 0;
+  margin: 0;
 }
 
-.hero {
+.site-header p {
+  font-size: 1.1rem;
+  color: #ccc;
+  margin-bottom: 1rem;
+}
+
+.main-nav {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+}
+
+.main-nav a {
+  color: #ffffff;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.main-nav a:hover {
+  color: #ffd700;
+}
+
+/* Hero Section */
+.hero-section {
   position: relative;
   height: 600px;
   overflow: hidden;
 }
 
-.slideshow {
+.slideshow-container {
   position: absolute;
   top: 0;
   left: 0;
@@ -39,7 +74,7 @@ nav a {
   height: 100%;
 }
 
-.slideshow img {
+.slide {
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -47,24 +82,125 @@ nav a {
   top: 0;
   left: 0;
   opacity: 0;
-  transition: opacity 1s ease-in-out;
+  transition: opacity 1.2s ease-in-out;
 }
 
-.slideshow img:first-child {
+.slide.active {
   opacity: 1;
+  z-index: 1;
 }
 
 .overlay-text {
   position: relative;
-  z-index: 1;
+  z-index: 2;
   text-align: center;
   color: white;
-  padding: 5rem 1rem;
-  background: rgba(0, 0, 0, 0.4);
-  height: 100%;
   display: flex;
   flex-direction: column;
   justify-content: center;
+  align-items: center;
+  padding: 4rem 1rem;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.overlay-text h2 {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+.overlay-text p {
+  font-size: 1.2rem;
+  max-width: 600px;
+}
+
+/* Availability Section */
+.availability-section {
+  padding: 3rem 1rem;
+  background-color: #fff;
+  text-align: center;
+}
+
+.availability-section h2 {
+  font-size: 2rem;
+  margin-bottom: 2rem;
+  color: #1d2938;
+}
+
+.search-form {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
+  max-width: 800px;
+  margin: 0 auto 2rem;
+}
+
+.search-form label {
+  display: flex;
+  flex-direction: column;
+  font-weight: bold;
+  font-size: 0.95rem;
+  min-width: 140px;
+}
+
+.search-form input,
+.search-form select {
+  padding: 0.6rem;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  margin-top: 0.3rem;
+  font-size: 1rem;
+}
+
+.search-form button {
+  padding: 0.7rem 1.5rem;
+  background-color: #2e3b4e;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.search-form button:hover {
+  background-color: #1d2938;
+}
+
+/* Experience Section */
+.experience-section {
+  padding: 3rem 1rem;
+  max-width: 800px;
+  margin: auto;
+  background-color: #fafafa;
+  font-size: 1rem;
+  line-height: 1.7;
+}
+
+.experience-section h2,
+.experience-section h3 {
+  color: #1d2938;
+  margin-bottom: 1rem;
+}
+
+.experience-section ul {
+  list-style: none;
+  padding-left: 0;
+  margin-top: 1rem;
+}
+
+.experience-section li {
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.experience-section li::before {
+  content: "✔";
+  color: #2e3b4e;
+  font-weight: bold;
 }
 
 .rooms, .contact {
@@ -91,47 +227,12 @@ footer {
   text-align: center;
   padding: 1rem;
 }
-
-.availability {
+.booking-form {
   padding: 2rem;
-  background-color: #f9f9f9;
-  text-align: center;
+  max-width: 600px;
+  margin: auto;
 }
 
-.search-form {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 1rem;
-  margin-top: 1rem;
-}
-
-.search-form label {
-  display: flex;
-  flex-direction: column;
-  font-weight: bold;
-}
-
-.search-form input {
-  padding: 0.5rem;
-  border-radius: 5px;
-  border: 1px solid #ccc;
-}
-
-.search-form button {
-  padding: 0.7rem 1.5rem;
-  background-color: #2e3b4e;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-.search-form button:hover {
-  background-color: #1d2938;
-}
 .booking-form {
   padding: 2rem;
   max-width: 600px;
