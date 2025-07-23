@@ -233,12 +233,6 @@ footer {
   margin: auto;
 }
 
-.booking-form {
-  padding: 2rem;
-  max-width: 600px;
-  margin: auto;
-}
-
 .booking-form form {
   display: flex;
   flex-direction: column;
@@ -291,34 +285,7 @@ footer {
   margin-top: 0;
   color: #2e3b4e;
 }
-.experience {
-  padding: 2rem;
-  max-width: 800px;
-  margin: auto;
-  background-color: #fefefe;
-  line-height: 1.6;
-}
 
-.experience h2 {
-  text-align: center;
-  color: #2e3b4e;
-}
-
-.experience h3 {
-  margin-top: 1.5rem;
-  color: #2e3b4e;
-}
-
-.experience ul {
-  list-style: none;
-  padding-left: 0;
-}
-
-.experience ul li {
-  padding: 0.5rem 0;
-  border-bottom: 1px solid #eee;
-  font-size: 1rem;
-}
 .brand {
   display: flex;
   align-items: center;
@@ -355,36 +322,11 @@ footer {
 .room-detail ul li {
   margin-bottom: 0.5rem;
 }
-.slider {
-  width: 100%;
-  max-width: 800px;
-  margin: 2rem auto;
-  overflow: hidden;
-  border-radius: 10px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-}
-
-.slide-track {
-  display: flex;
-  animation: scrollSlider 12s infinite ease-in-out;
-}
-
-.slide-track img {
-  width: 100%;
-  flex-shrink: 0;
-  object-fit: cover;
-}
-
-@keyframes scrollSlider {
-  0% { transform: translateX(0%); }
-  33% { transform: translateX(-100%); }
-  66% { transform: translateX(-200%); }
-  100% { transform: translateX(0%); }
-}
 .room-hero {
-  position: relative;
-  height: 100px;
-  overflow: hidden;
+  display: flex;
+text-align: center;
+  flex-direction: column;
+  gap: 1rem;
 }
 .whatsapp-float {
   position: fixed;
@@ -403,4 +345,31 @@ footer {
   align-items: center;
   justify-content: center;
   text-decoration: none;
+}
+.book-now-button {
+  display: inline-block;
+  padding: 10px 20px;
+  background-color: #28a745;
+  color: white;
+  text-decoration: none;
+  border-radius: 5px;
+}
+/* Make the slider full width */
+.slider {
+  width: 100vw;         /* Full viewport width */
+  height: auto;
+  margin: 0;
+  padding: 0;
+}
+
+.swiper {
+  width: 100%;
+  height: 100%;
+}
+
+.swiper-slide img {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
 }
