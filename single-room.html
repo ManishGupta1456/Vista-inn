@@ -1,22 +1,57 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />  
+<meta charset="UTF-8">
   <title>Deluxe Single Room – Vista Inn</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="style.css">
+<meta name="description" content="Book comfertable and peaceful luxary rooms at Hotel Vista Inn near Ranthambore National Park Sawai Madhopur. Book your stay today!" />
+  <meta property="og:title" content="Special Offers – Hotel Vista Inn" />
+  <meta property="og:description" content="Book comfertable and luxary stay at Hotel Vista Inn near Ranthambore Tiger Reserve Sawai Madhopur." />
+    <meta property="og:url" content="https://vistahotels.in/booking.html " />
+  
+<!-- Favicon -->
+  <link rel="icon" href="images/favicon.ico" type="image/x-icon">
+
+  <!-- Font Awesome CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css "/>
+
+  <!-- Stylesheet -->  
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header class="room-hero">
+<header class="site-header">
+    <div class="brand">
+      <img src="images/logo.png" alt="Hotel Vista Inn Logo" class="logo-img">
+      <h1 class="hotel-name">Hotel Vista Inn</h1>
+    </div>
+    <p>Ranthambore, Sawai Madhopur</p>
+    <nav class="main-nav">
+      <a href="index.html">Home</a>
+      <a href="booking.html">Book Now</a>
+    </nav>
+  </header>
+  
+<header class="room-hero">
     <div class="overlay">
       <h1>Deluxe Single Room</h1>
     </div>
   </header>
 
   <section class="slider">
-  <div class="slide-track">
-    <img src="images/single02.jpg" alt="Room View 1">
-    <img src="images/single03.jpg" alt="Room View 2">
+  <div class="swiper">
+    <div class="swiper-wrapper">
+      <div class="swiper-slide"><img src="images/single02.jpg" alt="Room View 1"></div>
+      <div class="swiper-slide"><img src="images/single03.jpg" alt="Room View 2"></div>
+      <!-- Add more slides as needed -->
+    </div>
+
+    <!-- Optional navigation arrows -->
+    <div class="swiper-button-next"></div>
+    <div class="swiper-button-prev"></div>
+
+    <!-- Optional pagination (dots) -->
+    <div class="swiper-pagination"></div>
   </div>
 </section>
   
@@ -38,6 +73,25 @@
 
   <footer>
     <p>© 2025 Vista Inn. All rights reserved.</p>
+<p><a href="index.html">Back to Home</a></p>
   </footer>
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+<script>
+  const swiper = new Swiper('.swiper', {
+    loop: true,
+    autoplay: {
+      delay: 3000, // 3 seconds
+      disableOnInteraction: false, // keep autoplay after manual swipe
+    },
+    navigation: {
+      nextEl: '.swiper-button-next',
+      prevEl: '.swiper-button-prev',
+    },
+    pagination: {
+      el: '.swiper-pagination',
+      clickable: true,
+    },
+  });
+</script>
 </body>
 </html>
