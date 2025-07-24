@@ -65,7 +65,7 @@
 
       <div id="otp-box" style="display:none; margin-top: 20px;">
         <label>Enter OTP (sent to your phone and email):</label>
-        <!-- DO NOT PLACE required HERE to avoid invalid state after dynamic show/hide -->
+        <!-- No 'required' attribute to avoid validation conflicts -->
         <input type="text" id="otp-input" maxlength="6" pattern="[0-9]{6}" />
         <button type="button" id="submit-otp-btn">Submit OTP</button>
       </div>
@@ -76,13 +76,15 @@
     <p>© 2025 Vista Inn. All rights reserved.</p>
   </footer>
 
+  <!-- Supabase JS CDN -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
+  <!-- Consolidated Module Script -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
     import { getAuth, RecaptchaVerifier, signInWithPhoneNumber } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
 
-    // --- Firebase ---
+    // Firebase config and init
     const firebaseConfig = {
       apiKey: "AIzaSyC5gC1rUjbvk4L3cmiLHNKLkSuEgkduWys",
       authDomain: "hotel-vista-inn.firebaseapp.com",
@@ -94,13 +96,13 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
 
-    // --- Supabase ---
+    // Supabase client init
     const supabaseClient = supabase.createClient(
       "https://fvfhptpkyntqijtpgdse.supabase.co",
       "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ2ZmhwdHBreW50cWlqdHBnZHNlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEzNDk4OTAsImV4cCI6MjA2NjkyNTg5MH0.HFVj4oZ_acMOmLiL7ix-G8DahuWzmL9mqDkuvjr8HRA"
     );
 
-    // --- DOM Elements ---
+    // DOM Elements
     const form = document.getElementById("booking-form");
     const roomTypeSelect = document.getElementById("roomtype");
     const guestsInput = document.getElementById("guests");
@@ -111,7 +113,7 @@
     const submitOtpBtn = document.getElementById("submit-otp-btn");
     const otpInput = document.getElementById("otp-input");
 
-    // --- Helpers & UI Setup ---
+    // Utility functions
     function setMinDates() {
       const today = new Date().toISOString().split("T")[0];
       checkinInput.min = today;
@@ -128,6 +130,7 @@
         if (guestsInput.value < 1) guestsInput.value = 1;
       }
     }
+
     roomTypeSelect.addEventListener("change", () => {
       updateGuestLimits();
       calculateLivePrice();
@@ -190,6 +193,7 @@
       }
       return id;
     }
+
     async function generateUniqueBookingID(prefix = "A") {
       for (let attempt = 0; attempt < 5; attempt++) {
         const bookingID = generateBookingID(prefix);
@@ -208,11 +212,10 @@
     let generatedOTP = "";
     let locked = false;
 
-    // --- Form Submit: Validate, Check Availability, Send OTP ---
-    form.addEventListener('submit', async (e) => {
+    // Submit booking form -> validate, check rooms, send OTP
+    form.addEventListener("submit", async (e) => {
       e.preventDefault();
 
-      // UI/lock safety to prevent double submit
       if (locked) return;
       locked = true;
 
@@ -241,15 +244,15 @@
         return;
       }
 
-      // Availability check
+      // Check availability for all dates requested
       const datesToCheck = getDateRange(checkin, checkout);
       const maxRooms = room_type === "double" ? 3 : 1;
       for (const date of datesToCheck) {
         try {
           const resultBookings = await supabaseClient
-            .from('bookings')
-            .select('checkin_date, checkout_date')
-            .eq('room_type', room_type);
+            .from("bookings")
+            .select("checkin_date, checkout_date")
+            .eq("room_type", room_type);
 
           const bookings = (resultBookings.data || []).filter(b => {
             const inDate = new Date(date);
@@ -259,9 +262,9 @@
           });
 
           const resultBlocked = await supabaseClient
-            .from('blocked_dates')
-            .select('start_date, end_date')
-            .eq('room_type', room_type);
+            .from("blocked_dates")
+            .select("start_date, end_date")
+            .eq("room_type", room_type);
 
           const blocked = (resultBlocked.data || []).filter(b => {
             const inDate = new Date(date);
@@ -269,23 +272,23 @@
             const end = new Date(b.end_date);
             return inDate >= start && inDate <= end;
           });
+
           if (bookings.length + blocked.length >= maxRooms) {
             alert(`❌ No rooms available on ${date}. Please choose other dates.`);
             locked = false;
             return;
           }
-        } catch (err) {
+        } catch {
           alert("Something went wrong while checking availability.");
           locked = false;
           return;
         }
       }
 
-      // OTP: Firebase SMS & Email via Netlify
+      // Send OTP via Firebase SMS and email via serverless function
       otpBox.style.display = "block";
       generatedOTP = Math.floor(100000 + Math.random() * 900000).toString();
 
-      // Firebase Recaptcha on demand
       if (!recaptchaVerifier) {
         recaptchaVerifier = new RecaptchaVerifier(
           submitOtpBtn,
@@ -293,36 +296,38 @@
           auth
         );
       }
+
       const phoneWithCountry = "+91" + phone.replace(/^0+/, "");
+
       try {
         confirmationResult = await signInWithPhoneNumber(auth, phoneWithCountry, recaptchaVerifier);
-        // Store generated OTP in Supabase otp_session table for later verification
-        await supabaseClient.from("otp_session").insert([{
-          phone,
-          email,
-          otp: generatedOTP,
-          expires_at: new Date(Date.now() + 10 * 60 * 1000).toISOString() // expire 10min
-        }]);
+        // Your option: save OTP to Supabase otp_session table here if used
       } catch (error) {
         alert("Failed to send SMS OTP. Try again.");
         locked = false;
         otpBox.style.display = "none";
         return;
       }
-      // Send OTP to email via your Netlify function
+
+      // Send OTP email via Netlify function (fire and forget)
       fetch("https://vistainn.netlify.app/.netlify/functions/send-email", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name, email, phone, otp: generatedOTP
-        })
-      }).catch(() => {/* Email delivery failure handled silently */});
+          name,
+          email,
+          phone,
+          otp: generatedOTP,
+        }),
+      }).catch(() => {});
+
       locked = false;
     });
 
-    // --- OTP Submit: Verify and Save ---
+    // Submit OTP -> Verify and save booking + confirmation email
     submitOtpBtn.addEventListener("click", async () => {
       const enteredOtp = otpInput.value.trim();
+
       if (!/^\d{6}$/.test(enteredOtp)) {
         alert("❌ Please enter a valid 6-digit OTP.");
         return;
@@ -332,24 +337,12 @@
         return;
       }
       try {
+        // Confirm OTP via Firebase
         await confirmationResult.confirm(enteredOtp);
 
-        // Verify OTP validity with Supabase otp_session
-        const { data: otpRows, error } = await supabaseClient
-          .from("otp_session")
-          .select("otp,expires_at")
-          .eq("otp", enteredOtp)
-          .limit(1);
-        if (error || !otpRows || otpRows.length === 0) {
-          alert("Invalid OTP. Try again!");
-          return;
-        }
-        // Optionally, check for expiry
-        if (new Date(otpRows[0].expires_at) < new Date()) {
-          alert("OTP expired. Please try again.");
-          return;
-        }
-        // OTP valid — Save booking!
+        // Optionally verify OTP matches generatedOTP if stored locally; here just proceed
+
+        // Save booking
         const booking_id = await generateUniqueBookingID("A");
         const formData = new FormData(form);
 
@@ -367,8 +360,9 @@
           alert("❌ Booking save failed. Try again.");
           return;
         }
-        // Confirmation email
-        fetch("https://vistainn.netlify.app/.netlify/functions/send-email", {
+
+        // Send booking confirmation email
+        await fetch("https://vistainn.netlify.app/.netlify/functions/send-email", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -379,11 +373,12 @@
             checkin: formData.get("checkin"),
             checkout: formData.get("checkout"),
             booking_id
-          })
-        }).finally(() => {
-          window.location.href = `confirmation.html?booking_id=${booking_id}`;
+          }),
         });
-      } catch (err) {
+
+        // Redirect to confirmation page
+        window.location.href = `confirmation.html?booking_id=${booking_id}`;
+      } catch {
         alert("❌ OTP verification failed.");
       }
     });
