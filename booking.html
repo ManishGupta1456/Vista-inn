@@ -71,7 +71,7 @@
 
       <div id="otp-box" style="display: none; margin-top: 20px;">
         <label>Enter OTP (sent to your phone and email):</label>
-        <input type="text" id="otp-input" maxlength="6" />
+        <input type="text" id="otp-input" maxlength="6" required />
         <button type="button" id="submit-otp-btn">Submit OTP</button>
       </div>
     </form>
@@ -81,7 +81,32 @@
     <p>© 2025 Vista Inn. All rights reserved.</p>
   </footer>
 
-  <!-- Supabase SDK -->
+ <!-- Firebase modular imports and init -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+    import {
+      getAuth,
+      RecaptchaVerifier,
+      signInWithPhoneNumber,
+    } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyC5gC1rUjbvk4L3cmiLHNKLkSuEgkduWys",
+      authDomain: "hotel-vista-inn.firebaseapp.com",
+      projectId: "hotel-vista-inn",
+      storageBucket: "hotel-vista-inn.firebasestorage.app",
+      messagingSenderId: "17658781294",
+      appId: "1:17658781294:web:88703a4966c049a8bed07f",
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    window.firebaseAuth = auth;
+    window.RecaptchaVerifier = RecaptchaVerifier;
+    window.signInWithPhoneNumber = signInWithPhoneNumber;
+  </script> 
+ <!-- Supabase SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     // Corrected Supabase client init
@@ -434,30 +459,6 @@
     });
   </script>
 
-  <!-- Firebase modular imports and init -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
-    import {
-      getAuth,
-      RecaptchaVerifier,
-      signInWithPhoneNumber,
-    } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyC5gC1rUjbvk4L3cmiLHNKLkSuEgkduWys",
-      authDomain: "hotel-vista-inn.firebaseapp.com",
-      projectId: "hotel-vista-inn",
-      storageBucket: "hotel-vista-inn.firebasestorage.app",
-      messagingSenderId: "17658781294",
-      appId: "1:17658781294:web:88703a4966c049a8bed07f",
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-
-    window.firebaseAuth = auth;
-    window.RecaptchaVerifier = RecaptchaVerifier;
-    window.signInWithPhoneNumber = signInWithPhoneNumber;
-  </script>
+ 
 </body>
 </html>
