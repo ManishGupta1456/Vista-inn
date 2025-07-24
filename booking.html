@@ -1,21 +1,27 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Book Your Stay – Vista Inn</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="Check out current special offers at Hotel Vista Inn near Ranthambore National Park Sawai Madhopur. Book your stay today!" />
   <meta property="og:title" content="Special Offers – Hotel Vista Inn" />
   <meta property="og:description" content="Book comfortable and luxury stay at Hotel Vista Inn near Ranthambore Tiger Reserve Sawai Madhopur." />
   <meta property="og:url" content="https://vistahotels.in/booking.html" />
-  <link rel="icon" href="images/favicon.ico" type="image/x-icon">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
-  <link rel="stylesheet" href="style.css">
+
+  <!-- Favicon -->
+  <link rel="icon" href="images/favicon.ico" type="image/x-icon" />
+
+  <!-- Font Awesome CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <header class="site-header">
     <div class="brand">
-      <img src="images/logo.png" alt="Hotel Vista Inn Logo" class="logo-img">
+      <img src="images/logo.png" alt="Hotel Vista Inn Logo" class="logo-img" />
       <h1 class="hotel-name">Hotel Vista Inn</h1>
     </div>
     <p>Ranthambore, Sawai Madhopur</p>
@@ -28,39 +34,46 @@
   <main class="booking-form">
     <h2>Reservation Details</h2>
     <form id="booking-form">
-      <label for="name">Full Name:
-        <input type="text" id="name" name="name" required>
+      <label>
+        Full Name:
+        <input type="text" name="name" required />
       </label>
-      <label for="email">Email:
-        <input type="email" id="email" name="email" required>
+      <label>
+        Email:
+        <input type="email" name="email" required />
       </label>
-      <label for="phone">Phone:
-        <input type="tel" id="phone" name="phone" required pattern="[0-9]{10}" title="Enter 10-digit phone number">
+      <label>
+        Phone:
+        <input type="tel" name="phone" required />
       </label>
-      <label for="checkin">Check-in Date:
-        <input type="date" id="checkin" name="checkin" required>
+      <label>
+        Check-in Date:
+        <input type="date" id="checkin" name="checkin" required />
       </label>
-      <label for="checkout">Check-out Date:
-        <input type="date" id="checkout" name="checkout" required>
+      <label>
+        Check-out Date:
+        <input type="date" id="checkout" name="checkout" required />
       </label>
-      <label for="guests">Number of Guests:
-        <input type="number" id="guests" name="guests" min="1" max="2" required>
+      <label>
+        Number of Guests:
+        <input type="number" id="guests" name="guests" min="1" max="2" required />
       </label>
-      <label for="roomtype">Room Type:
+      <label>
+        Room Type:
         <select id="roomtype" name="roomtype" required>
           <option value="double">Deluxe Double Room</option>
           <option value="single">Deluxe Single Room</option>
         </select>
       </label>
       <p id="live-price" style="font-weight: bold; margin: 10px 0;"></p>
+
       <button type="submit">Confirm Booking</button>
 
-      <div id="otp-box" style="display:none; margin-top: 20px;">
-        <label for="otp-input">Enter OTP (sent to your phone and email):</label>
-        <input type="text" id="otp-input" maxlength="6" />
+      <div id="otp-box" style="display: none; margin-top: 20px;">
+        <label>Enter OTP (sent to your phone and email):</label>
+        <input type="text" id="otp-input" maxlength="6" required />
         <button type="button" id="submit-otp-btn">Submit OTP</button>
       </div>
-      <div id="recaptcha-container"></div>
     </form>
   </main>
 
@@ -68,18 +81,375 @@
     <p>© 2025 Vista Inn. All rights reserved.</p>
   </footer>
 
+  <!-- Supabase SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    // Corrected Supabase client init
+    const supabaseClient = supabase.createClient(
+      "https://fvfhptpkyntqijtpgdse.supabase.co",
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ2ZmhwdHBreW50cWlqdHBnZHNlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEzNDk4OTAsImV4cCI6MjA2NjkyNTg5MH0.HFVj4oZ_acMOmLiL7ix-G8DahuWzmL9mqDkuvjr8HRA"
+    );
+
+    const form = document.getElementById("booking-form");
+    const roomTypeSelect = document.getElementById("roomtype");
+    const guestsInput = document.getElementById("guests");
+    const checkinInput = document.getElementById("checkin");
+    const checkoutInput = document.getElementById("checkout");
+    const livePriceDisplay = document.getElementById("live-price");
+    const otpBox = document.getElementById("otp-box");
+    const submitOtpBtn = document.getElementById("submit-otp-btn");
+    const otpInput = document.getElementById("otp-input");
+
+    // Set min date for checkin, checkout on page load
+    function setMinDates() {
+      const today = new Date().toISOString().split("T")[0];
+      checkinInput.min = today;
+      checkoutInput.min = today;
+    }
+    setMinDates();
+
+    // Handle max guests depending on room type
+    function updateGuestLimits() {
+      if (roomTypeSelect.value === "single") {
+        guestsInput.max = 1;
+        if (guestsInput.value > 1) guestsInput.value = 1;
+      } else {
+        guestsInput.max = 2;
+        if (guestsInput.value < 1) guestsInput.value = 1;
+      }
+    }
+    roomTypeSelect.addEventListener("change", () => {
+      updateGuestLimits();
+      calculateLivePrice();
+    });
+
+    guestsInput.addEventListener("input", () => {
+      // enforce limits immediately on input
+      if (roomTypeSelect.value === "single" && guestsInput.value > 1) guestsInput.value = 1;
+      if (roomTypeSelect.value === "double" && guestsInput.value > 2) guestsInput.value = 2;
+    });
+
+    // Helper: get date array in range (checkout excluded)
+    function getDateRange(start, end) {
+      const dates = [];
+      let current = new Date(start);
+      const last = new Date(end);
+      last.setDate(last.getDate() - 1);
+      while (current <= last) {
+        dates.push(current.toISOString().split("T")[0]);
+        current.setDate(current.getDate() + 1);
+      }
+      return dates;
+    }
+
+    // Calculate live price on date & roomtype change
+    async function calculateLivePrice() {
+      const room_type = roomTypeSelect.value;
+      const checkin = checkinInput.value;
+      const checkout = checkoutInput.value;
+
+      livePriceDisplay.textContent = "";
+
+      if (!checkin || !checkout || checkin >= checkout) return;
+
+      const dateRange = getDateRange(checkin, checkout);
+      let total = 0;
+
+      for (const date of dateRange) {
+        const { data, error } = await supabaseClient
+          .from("room_prices")
+          .select("price")
+          .eq("room_type", room_type)
+          .eq("date", date)
+          .limit(1);
+
+        if (error) {
+          console.error("Error fetching room price:", error);
+        }
+
+        if (data && data.length > 0) {
+          total += parseFloat(data[0].price);
+        } else {
+          // Default prices
+          total += room_type === "double" ? 2000 : 1200;
+        }
+      }
+
+      livePriceDisplay.textContent = `💰 Total Price: ₹${total}`;
+    }
+
+    checkinInput.addEventListener("change", calculateLivePrice);
+    checkoutInput.addEventListener("change", calculateLivePrice);
+
+    updateGuestLimits();
+
+    // Generate 5-char Booking ID with prefix "A"
+    function generateBookingID(prefix = "A") {
+      const chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+      let id = prefix;
+      for (let i = 0; i < 5; i++) {
+        id += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return id;
+    }
+
+    // Try multiple times to get unique booking ID from DB
+    async function generateUniqueBookingID(prefix = "A") {
+      for (let attempt = 0; attempt < 5; attempt++) {
+        const bookingID = generateBookingID(prefix);
+
+        const { data, error } = await supabaseClient
+          .from("bookings")
+          .select("id")
+          .eq("booking_id", bookingID);
+
+        if (!error && data.length === 0) {
+          return bookingID;
+        }
+      }
+      throw new Error("❌ Could not generate a unique booking ID.");
+    }
+
+    // Validation helpers
+    function validateBookingLimits(roomType, guests) {
+      if ((roomType === "single" && guests > 1) || (roomType === "double" && guests > 2)) {
+        alert(`❌ Guest limit exceeded for ${roomType} room.`);
+        return false;
+      }
+      return true;
+    }
+
+    // Initial hide OTP box
+    otpBox.style.display = "none";
+
+    // Firebase OTP initialization done below in separate script tag
+
+    // Step 1: Form Submit triggers sending OTP
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const room_type = roomTypeSelect.value;
+      const guests = parseInt(guestsInput.value);
+      if (!validateBookingLimits(room_type, guests)) return;
+
+      const checkin = checkinInput.value;
+      const checkout = checkoutInput.value;
+      const name = form.name.value.trim();
+      const email = form.email.value.trim();
+      const phone = form.phone.value.trim();
+
+      const today = new Date().toISOString().split("T")[0];
+
+      if (checkin < today) {
+        alert("❌ Check-in date cannot be in the past.");
+        return;
+      }
+      if (checkin >= checkout) {
+        alert("❌ Check-out date must be after check-in date.");
+        return;
+      }
+
+      // Check availability for each date
+      const datesToCheck = getDateRange(checkin, checkout);
+      const maxRooms = room_type === "double" ? 3 : 1;
+
+      for (const date of datesToCheck) {
+        try {
+          const resultBookings = await supabaseClient
+            .from("bookings")
+            .select("checkin_date, checkout_date")
+            .eq("room_type", room_type);
+
+          const bookings = (resultBookings.data || []).filter((b) => {
+            const inDate = new Date(date);
+            const start = new Date(b.checkin_date);
+            const end = new Date(b.checkout_date);
+            return inDate >= start && inDate < end; // checkout is exclusive
+          });
+
+          const resultBlocked = await supabaseClient
+            .from("blocked_dates")
+            .select("start_date, end_date")
+            .eq("room_type", room_type);
+
+          const blocked = (resultBlocked.data || []).filter((b) => {
+            const inDate = new Date(date);
+            const start = new Date(b.start_date);
+            const end = new Date(b.end_date);
+            return inDate >= start && inDate <= end;
+          });
+
+          const bookedCount = bookings.length + blocked.length;
+
+          if (bookedCount >= maxRooms) {
+            alert(`❌ No rooms available on ${date}. Please choose other dates.`);
+            return;
+          }
+        } catch (err) {
+          console.error("⚠ Error checking availability:", err);
+          alert("Something went wrong while checking availability.");
+          return;
+        }
+      }
+
+      // Generate OTP and send via Firebase SMS and Email
+
+      const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+      window.generatedOTP = otp; // Save OTP globally for check
+
+      // Show OTP box
+      otpBox.style.display = "block";
+
+      // Format phone for Firebase (+91)
+      const phoneWithCountry = "+91" + phone.replace(/^0+/, "");
+
+      // Setup invisible reCAPTCHA once with Firebase auth
+      if (!window.recaptchaVerifier) {
+        window.recaptchaVerifier = new RecaptchaVerifier(
+          "submit-otp-btn",
+          {
+            size: "invisible",
+            callback: () => {
+              // reCAPTCHA solved callback
+            },
+          },
+          window.firebaseAuth
+        );
+      }
+
+      const appVerifier = window.recaptchaVerifier;
+
+      // Send SMS OTP with Firebase
+      signInWithPhoneNumber(window.firebaseAuth, phoneWithCountry, appVerifier)
+        .then((confirmationResult) => {
+          window.confirmationResult = confirmationResult;
+          console.log("📲 SMS OTP sent.");
+        })
+        .catch((error) => {
+          console.error("❌ Firebase SMS failed:", error);
+          alert("Failed to send SMS OTP. Try again.");
+          otpBox.style.display = "none";
+        });
+
+      // Send OTP to email via your Netlify serverless function
+      fetch("https://vistainn.netlify.app/.netlify/functions/send-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name,
+          email,
+          phone,
+          otp,
+          purpose: "send_otp", // optional flag for server function if needed
+        }),
+      })
+        .then((res) => {
+          if (!res.ok) throw new Error("Failed to send OTP to email");
+          console.log("📧 Email OTP sent.");
+        })
+        .catch((err) => {
+          console.error("❌ Email send error:", err);
+        });
+    });
+
+    // Step 2: Verify OTP entered by user, then save booking and send confirmation email
+    submitOtpBtn.addEventListener("click", async () => {
+      const enteredOtp = otpInput.value.trim();
+
+      if (enteredOtp.length !== 6) {
+        alert("❌ Please enter a 6-digit OTP.");
+        return;
+      }
+
+      try {
+        // 1. Verify OTP with Firebase
+        await window.confirmationResult.confirm(enteredOtp);
+
+        // 2. Verify OTP matches email OTP stored
+        if (enteredOtp !== window.generatedOTP) {
+          alert("❌ OTP doesn't match. Please check and try again.");
+          return;
+        }
+
+        // 3. All good — save booking now!
+        const booking_id = await generateUniqueBookingID("A");
+
+        const room_type = roomTypeSelect.value;
+        const checkin = checkinInput.value;
+        const checkout = checkoutInput.value;
+        const name = form.name.value.trim();
+        const email = form.email.value.trim();
+        const phone = form.phone.value.trim();
+
+        const { error } = await supabaseClient.from("bookings").insert([
+          {
+            room_type,
+            checkin_date: checkin,
+            checkout_date: checkout,
+            guest_name: name,
+            guest_email: email,
+            guest_phone: phone,
+            booking_id: booking_id,
+          },
+        ]);
+
+        if (error) {
+          alert("❌ Booking save failed. Try again.");
+          console.error(error);
+          return;
+        }
+
+        // Send booking confirmation email after save
+        fetch("https://vistainn.netlify.app/.netlify/functions/send-email", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name,
+            email,
+            phone,
+            room_type,
+            checkin,
+            checkout,
+            booking_id,
+            purpose: "booking_confirmation", // optional flag
+          }),
+        })
+          .then((res) => {
+            if (!res.ok) throw new Error("Email confirmation sending failed");
+            return res.text();
+          })
+          .then(() => {
+            window.location.href = `confirmation.html?booking_id=${booking_id}`;
+          })
+          .catch((err) => {
+            console.error("❌ Confirmation email send failed:", err);
+            alert("❌ Error sending confirmation email.");
+            window.location.href = "index.html";
+          });
+      } catch (err) {
+        alert("❌ OTP verification failed. Please try again.");
+        console.error(err);
+      }
+    });
+  </script>
+
+  <!-- Firebase modular imports and init -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
-    import { getAuth, RecaptchaVerifier, signInWithPhoneNumber } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
+    import {
+      getAuth,
+      RecaptchaVerifier,
+      signInWithPhoneNumber,
+    } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyC5gC1rUjbvk4L3cmiLHNKLkSuEgkduWys",
       authDomain: "hotel-vista-inn.firebaseapp.com",
       projectId: "hotel-vista-inn",
-      storageBucket: "hotel-vista-inn.appspot.com",
+      storageBucket: "hotel-vista-inn.firebasestorage.app",
       messagingSenderId: "17658781294",
-      appId: "1:17658781294:web:88703a4966c049a8bed07f"
+      appId: "1:17658781294:web:88703a4966c049a8bed07f",
     };
 
     const app = initializeApp(firebaseConfig);
@@ -89,6 +459,5 @@
     window.RecaptchaVerifier = RecaptchaVerifier;
     window.signInWithPhoneNumber = signInWithPhoneNumber;
   </script>
-  <script src="booking.js" type="module"></script>
 </body>
 </html>
