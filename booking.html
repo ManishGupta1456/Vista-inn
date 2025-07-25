@@ -2,156 +2,70 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Book Your Stay – Vista Inn</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Book comfortable and luxury stay at Hotel Vista Inn near Ranthambore Tiger Reserve Sawai Madhopur." />
-  <meta property="og:title" content="Special Offers – Hotel Vista Inn" />
-  <meta property="og:description" content="Book comfortable and luxury stay at Hotel Vista Inn near Ranthambore Tiger Reserve Sawai Madhopur." />
-  <meta property="og:url" content="https://vistahotels.in/booking.html" />
-  <link rel="icon" href="images/favicon.ico" type="image/x-icon" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <title>Book Your Stay – Hotel Vista Inn</title>
+  <meta name="description" content="Book your stay at Hotel Vista Inn, Ranthambore." />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <header class="site-header">
-    <div class="brand">
-      <img src="images/logo.png" alt="Hotel Vista Inn Logo" class="logo-img" />
-      <h1 class="hotel-name">Hotel Vista Inn</h1>
-    </div>
+  <header>
+    <h1>Hotel Vista Inn</h1>
     <p>Ranthambore, Sawai Madhopur</p>
-    <nav class="main-nav">
+    <nav>
       <a href="index.html">Home</a>
       <a href="booking.html">Book Now</a>
     </nav>
   </header>
 
-  <main class="booking-form">
-    <h2>Reservation Details</h2>
+  <main>
+    <h2>Reservation Form</h2>
     <form id="booking-form" autocomplete="off">
-      <label>
-        Full Name:
-        <input type="text" name="name" required />
-      </label>
-      <label>
-        Email:
-        <input type="email" name="email" required />
-      </label>
-      <label>
-        Phone:
-        <input type="tel" name="phone" required />
-      </label>
-      <label>
-        Check-in Date:
-        <input type="date" id="checkin" name="checkin" required />
-      </label>
-      <label>
-        Check-out Date:
-        <input type="date" id="checkout" name="checkout" required />
-      </label>
-      <label>
-        Number of Guests:
-        <input type="number" id="guests" name="guests" min="1" max="2" required />
-      </label>
-      <label>
-        Room Type:
-        <select id="roomtype" name="roomtype" required>
-          <option value="double">Deluxe Double Room</option>
-          <option value="single">Deluxe Single Room</option>
-        </select>
-      </label>
+      <label for="name">Full Name:</label>
+      <input type="text" id="name" name="name" required autocomplete="name" />
+
+      <label for="email">Email:</label>
+      <input type="email" id="email" name="email" required autocomplete="email" />
+
+      <label for="phone">Phone Number:</label>
+      <input type="tel" id="phone" name="phone" required autocomplete="tel" />
+
+      <label for="checkin">Check-in Date:</label>
+      <input type="date" id="checkin" name="checkin" required />
+
+      <label for="checkout">Check-out Date:</label>
+      <input type="date" id="checkout" name="checkout" required />
+
+      <label for="guests">Number of Guests:</label>
+      <input type="number" id="guests" name="guests" min="1" max="2" value="1" required />
+
+      <label for="roomtype">Room Type:</label>
+      <select id="roomtype" name="roomtype" required>
+        <option value="double">Deluxe Double Room</option>
+        <option value="single">Deluxe Single Room</option>
+      </select>
+
       <p id="live-price" style="font-weight: bold; margin: 10px 0;"></p>
 
+      <div id="recaptcha-container" style="margin-bottom: 15px;"></div>
+
       <button type="submit">Confirm Booking</button>
-<div id="recaptcha-container"></div>
-      <div id="otp-box" style="display:none; margin-top: 20px;">
-        <label>Enter OTP (sent to your phone and email):</label>
-        <!-- No required attribute here to avoid validation blocking -->
-        <input type="text" id="otp-input" maxlength="6" pattern="[0-9]{6}" />
-        <button type="button" id="submit-otp-btn">Submit OTP</button>
-      </div>
     </form>
+
+    <div id="otp-box" style="display: none; margin-top: 20px;">
+      <label for="otp-input">Enter OTP (sent to your phone and email):</label>
+      <input type="text" id="otp-input" maxlength="6" pattern="[0-9]{6}" autocomplete="one-time-code" />
+      <button type="button" id="submit-otp-btn">Submit OTP</button>
+    </div>
   </main>
 
   <footer>
     <p>© 2025 Vista Inn. All rights reserved.</p>
   </footer>
 
-  <!-- Supabase JS -->
+  <!-- Supabase -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-  <!-- Combined Firebase + Supabase Logic -->
-  <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
-  import {
-    getAuth,
-    RecaptchaVerifier,
-    signInWithPhoneNumber
-  } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
-
-  // Firebase config
-  const firebaseConfig = {
-    apiKey: "AIzaSyC5gC1rUjbvk4L3cmiLHNKLkSuEgkduWys",
-    authDomain: "hotel-vista-inn.firebaseapp.com",
-    projectId: "hotel-vista-inn",
-    storageBucket: "hotel-vista-inn.appspot.com",
-    messagingSenderId: "17658781294",
-    appId: "1:17658781294:web:88703a4966c049a8bed07f"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  auth.useDeviceLanguage(); // Use user's browser language
-
-  // Initialize ReCaptcha
-  let recaptchaVerifier = new RecaptchaVerifier("recaptcha-container", {
-    size: "invisible",
-    callback: (response) => {
-      // reCAPTCHA solved
-    },
-  }, auth);
-
-  let confirmationResult = null;
-
-  // OTP box DOM
-  const form = document.getElementById("booking-form");
-  const otpBox = document.getElementById("otp-box");
-  const submitOtpBtn = document.getElementById("submit-otp-btn");
-  const otpInput = document.getElementById("otp-input");
-
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-
-    const phone = form.phone.value.trim();
-    const phoneWithCountry = "+91" + phone.replace(/^0+/, "");
-
-    try {
-      confirmationResult = await signInWithPhoneNumber(auth, phoneWithCountry, recaptchaVerifier);
-      otpBox.style.display = "block";
-      alert("✅ OTP sent to your phone.");
-    } catch (error) {
-      console.error("OTP sending failed:", error);
-      alert("❌ Failed to send OTP. Check reCAPTCHA and phone number.");
-    }
-  });
-
-  submitOtpBtn.addEventListener("click", async () => {
-    const enteredOtp = otpInput.value.trim();
-    if (!enteredOtp.match(/^\d{6}$/)) {
-      alert("❌ Invalid OTP");
-      return;
-    }
-
-    try {
-      await confirmationResult.confirm(enteredOtp);
-      alert("✅ Phone number verified! Proceeding to save booking...");
-
-      // Now proceed with saving booking data (you can move this part from your main logic here)
-
-    } catch (error) {
-      console.error("OTP verification failed:", error);
-      alert("❌ Incorrect OTP");
-    }
-  });
-</script>
+  <!-- Booking Logic -->
+  <script type="module" src="booking.js"></script>
 </body>
 </html>
