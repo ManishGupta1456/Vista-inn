@@ -62,7 +62,7 @@
       <p id="live-price" style="font-weight: bold; margin: 10px 0;"></p>
 
       <button type="submit">Confirm Booking</button>
-
+<div id="recaptcha-container"></div>
       <div id="otp-box" style="display:none; margin-top: 20px;">
         <label>Enter OTP (sent to your phone and email):</label>
         <!-- No required attribute here to avoid validation blocking -->
@@ -81,306 +81,77 @@
 
   <!-- Combined Firebase + Supabase Logic -->
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
-    import { getAuth, RecaptchaVerifier, signInWithPhoneNumber } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+  import {
+    getAuth,
+    RecaptchaVerifier,
+    signInWithPhoneNumber
+  } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
 
-    // Firebase configuration and initialization
-    const firebaseConfig = {
-      apiKey: "AIzaSyC5gC1rUjbvk4L3cmiLHNKLkSuEgkduWys",
-      authDomain: "hotel-vista-inn.firebaseapp.com",
-      projectId: "hotel-vista-inn",
-      storageBucket: "hotel-vista-inn.firebasestorage.app",
-      messagingSenderId: "17658781294",
-      appId: "1:17658781294:web:88703a4966c049a8bed07f"
-    };
+  // Firebase config
+  const firebaseConfig = {
+    apiKey: "AIzaSyC5gC1rUjbvk4L3cmiLHNKLkSuEgkduWys",
+    authDomain: "hotel-vista-inn.firebaseapp.com",
+    projectId: "hotel-vista-inn",
+    storageBucket: "hotel-vista-inn.appspot.com",
+    messagingSenderId: "17658781294",
+    appId: "1:17658781294:web:88703a4966c049a8bed07f"
+  };
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-auth.settings.appVerificationDisabledForTesting = true;
-    // Supabase client initialization
-    const supabaseClient = supabase.createClient(
-      "https://fvfhptpkyntqijtpgdse.supabase.co",
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ2ZmhwdHBreW50cWlqdHBnZHNlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEzNDk4OTAsImV4cCI6MjA2NjkyNTg5MH0.HFVj4oZ_acMOmLiL7ix-G8DahuWzmL9mqDkuvjr8HRA"
-    );
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  auth.useDeviceLanguage(); // Use user's browser language
 
-    // Cached DOM elements
-    const form = document.getElementById("booking-form");
-    const roomTypeSelect = document.getElementById("roomtype");
-    const guestsInput = document.getElementById("guests");
-    const checkinInput = document.getElementById("checkin");
-    const checkoutInput = document.getElementById("checkout");
-    const livePriceDisplay = document.getElementById("live-price");
-    const otpBox = document.getElementById("otp-box");
-    const submitOtpBtn = document.getElementById("submit-otp-btn");
-    const otpInput = document.getElementById("otp-input");
+  // Initialize ReCaptcha
+  let recaptchaVerifier = new RecaptchaVerifier("recaptcha-container", {
+    size: "invisible",
+    callback: (response) => {
+      // reCAPTCHA solved
+    },
+  }, auth);
 
-    // Initial UI Setup
-    function setMinDates() {
-      const today = new Date().toISOString().split("T")[0];
-      checkinInput.min = today;
-      checkoutInput.min = today;
-    }
-    setMinDates();
+  let confirmationResult = null;
 
-    function updateGuestLimits() {
-      if (roomTypeSelect.value === "single") {
-        guestsInput.max = 1;
-        if (guestsInput.value > 1) guestsInput.value = 1;
-      } else {
-        guestsInput.max = 2;
-        if (guestsInput.value < 1) guestsInput.value = 1;
-      }
-    }
-    roomTypeSelect.addEventListener("change", () => {
-      updateGuestLimits();
-      calculateLivePrice();
-    });
-    guestsInput.addEventListener("input", updateGuestLimits);
+  // OTP box DOM
+  const form = document.getElementById("booking-form");
+  const otpBox = document.getElementById("otp-box");
+  const submitOtpBtn = document.getElementById("submit-otp-btn");
+  const otpInput = document.getElementById("otp-input");
 
-    // Date utilities
-    function getDateRange(start, end) {
-      const dates = [];
-      let current = new Date(start);
-      const last = new Date(end);
-      last.setDate(last.getDate() - 1);
-      while (current <= last) {
-        dates.push(current.toISOString().split("T")[0]);
-        current.setDate(current.getDate() + 1);
-      }
-      return dates;
-    }
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
 
-    // Live price calculation
-    async function calculateLivePrice() {
-      const room_type = roomTypeSelect.value;
-      const checkin = checkinInput.value;
-      const checkout = checkoutInput.value;
-      livePriceDisplay.textContent = "";
+    const phone = form.phone.value.trim();
+    const phoneWithCountry = "+91" + phone.replace(/^0+/, "");
 
-      if (!checkin || !checkout || checkin >= checkout) return;
-
-      const dateRange = getDateRange(checkin, checkout);
-      let total = 0;
-
-      for (const date of dateRange) {
-        const { data } = await supabaseClient
-          .from("room_prices")
-          .select("price")
-          .eq("room_type", room_type)
-          .eq("date", date)
-          .limit(1);
-
-        if (data && data.length > 0) {
-          total += parseFloat(data[0].price);
-        } else {
-          total += room_type === "double" ? 2000 : 1200;
-        }
-      }
-
-      livePriceDisplay.textContent = `💰 Total Price: ₹${total}`;
-    }
-
-    checkinInput.addEventListener("change", calculateLivePrice);
-    checkoutInput.addEventListener("change", calculateLivePrice);
-
-    updateGuestLimits();
-
-    // Generate booking ID
-    function generateBookingID(prefix = "A") {
-      const chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-      let id = prefix;
-      for (let i = 0; i < 5; i++) {
-        id += chars.charAt(Math.floor(Math.random() * chars.length));
-      }
-      return id;
-    }
-    async function generateUniqueBookingID(prefix = "A") {
-      for (let i = 0; i < 5; i++) {
-        const bookingID = generateBookingID(prefix);
-        const { data } = await supabaseClient
-          .from("bookings")
-          .select("id")
-          .eq("booking_id", bookingID)
-          .limit(1);
-
-        if (data.length === 0) return bookingID;
-      }
-      throw new Error("❌ Could not generate a unique booking ID.");
-    }
-
-    // OTP and booking flow variables
-    let recaptchaVerifier;
-    let confirmationResult;
-    let generatedOTP = "";
-    let locked = false;
-
-    // Show/hide OTP UI helper with delayed element readiness
-    async function showOTPBox() {
+    try {
+      confirmationResult = await signInWithPhoneNumber(auth, phoneWithCountry, recaptchaVerifier);
       otpBox.style.display = "block";
-      // Await a few ms for the DOM to update and elements to be focusable
-      await new Promise((r) => setTimeout(r, 50));
+      alert("✅ OTP sent to your phone.");
+    } catch (error) {
+      console.error("OTP sending failed:", error);
+      alert("❌ Failed to send OTP. Check reCAPTCHA and phone number.");
+    }
+  });
+
+  submitOtpBtn.addEventListener("click", async () => {
+    const enteredOtp = otpInput.value.trim();
+    if (!enteredOtp.match(/^\d{6}$/)) {
+      alert("❌ Invalid OTP");
+      return;
     }
 
-    // Form submission handler: validate, check room availability, generate and send OTP
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
+    try {
+      await confirmationResult.confirm(enteredOtp);
+      alert("✅ Phone number verified! Proceeding to save booking...");
 
-      if (locked) return;
-      locked = true;
+      // Now proceed with saving booking data (you can move this part from your main logic here)
 
-      const room_type = roomTypeSelect.value;
-      const guests = parseInt(guestsInput.value);
-      const checkin = checkinInput.value;
-      const checkout = checkoutInput.value;
-      const name = form.name.value.trim();
-      const email = form.email.value.trim();
-      const phone = form.phone.value.trim();
-      const today = new Date().toISOString().split("T")[0];
-
-      if ((room_type === "single" && guests > 1) || (room_type === "double" && guests > 2)) {
-        alert(`❌ Guest limit exceeded for ${room_type} room.`);
-        locked = false;
-        return;
-      }
-      if (checkin < today) {
-        alert("❌ Check-in date cannot be in the past.");
-        locked = false;
-        return;
-      }
-      if (checkin >= checkout) {
-        alert("❌ Check-out date must be after check-in date.");
-        locked = false;
-        return;
-      }
-
-      // Check availability day by day
-      const datesToCheck = getDateRange(checkin, checkout);
-      const maxRooms = room_type === "double" ? 3 : 1;
-      for (const date of datesToCheck) {
-        try {
-          const { data: bookingsData } = await supabaseClient
-            .from("bookings")
-            .select("checkin_date, checkout_date")
-            .eq("room_type", room_type);
-
-          const bookings = (bookingsData || []).filter(b => {
-            const inDate = new Date(date);
-            const start = new Date(b.checkin_date);
-            const end = new Date(b.checkout_date);
-            return inDate >= start && inDate < end;
-          });
-
-          const { data: blockedData } = await supabaseClient
-            .from("blocked_dates")
-            .select("start_date, end_date")
-            .eq("room_type", room_type);
-
-          const blocked = (blockedData || []).filter(b => {
-            const inDate = new Date(date);
-            const start = new Date(b.start_date);
-            const end = new Date(b.end_date);
-            return inDate >= start && inDate <= end;
-          });
-
-          if (bookings.length + blocked.length >= maxRooms) {
-            alert(`❌ No rooms available on ${date}. Please choose other dates.`);
-            locked = false;
-            return;
-          }
-        } catch {
-          alert("Something went wrong while checking availability.");
-          locked = false;
-          return;
-        }
-      }
-
-      await showOTPBox();
-
-      generatedOTP = Math.floor(100000 + Math.random() * 900000).toString();
-
-      if (!recaptchaVerifier) {
-        if (!submitOtpBtn) {
-          alert("OTP submit button not found in DOM.");
-          locked = false;
-          return;
-        }
-        recaptchaVerifier = new RecaptchaVerifier(submitOtpBtn, { size: "invisible" }, auth);
-      }
-
-      const phoneWithCountry = "+91" + phone.replace(/^0+/, "");
-
-      try {
-        confirmationResult = await signInWithPhoneNumber(auth, phoneWithCountry, recaptchaVerifier);
-      } catch (error) {
-        alert("Failed to send SMS OTP. Try again.");
-        locked = false;
-        otpBox.style.display = "none";
-        return;
-      }
-
-      fetch("https://vistainn.netlify.app/.netlify/functions/send-email", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, phone, otp: generatedOTP }),
-      }).catch(() => {});
-
-      locked = false;
-    });
-
-    // Submit OTP button handler: validate OTP and save booking
-    submitOtpBtn.addEventListener("click", async () => {
-      const enteredOtp = otpInput.value.trim();
-
-      if (!/^\d{6}$/.test(enteredOtp)) {
-        alert("❌ Please enter a 6-digit OTP.");
-        return;
-      }
-      if (!confirmationResult) {
-        alert("OTP session not found. Please resubmit booking.");
-        return;
-      }
-
-      try {
-        await confirmationResult.confirm(enteredOtp);
-
-        // Save booking after successful OTP verification
-        const booking_id = await generateUniqueBookingID("A");
-        const formData = new FormData(form);
-
-        const { error } = await supabaseClient.from("bookings").insert([{
-          room_type: formData.get("roomtype"),
-          checkin_date: formData.get("checkin"),
-          checkout_date: formData.get("checkout"),
-          guest_name: formData.get("name"),
-          guest_email: formData.get("email"),
-          guest_phone: formData.get("phone"),
-          booking_id,
-        }]);
-        if (error) {
-          alert("❌ Booking save failed. Try again.");
-          return;
-        }
-
-        // Send booking confirmation email
-        await fetch("https://vistainn.netlify.app/.netlify/functions/send-email", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            name: formData.get("name"),
-            email: formData.get("email"),
-            phone: formData.get("phone"),
-            room_type: formData.get("roomtype"),
-            checkin: formData.get("checkin"),
-            checkout: formData.get("checkout"),
-            booking_id,
-          }),
-        });
-
-        window.location.href = `confirmation.html?booking_id=${booking_id}`;
-      } catch {
-        alert("❌ OTP verification failed.");
-      }
-    });
-  </script>
+    } catch (error) {
+      console.error("OTP verification failed:", error);
+      alert("❌ Incorrect OTP");
+    }
+  });
+</script>
 </body>
 </html>
