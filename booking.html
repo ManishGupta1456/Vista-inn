@@ -319,25 +319,25 @@
 }
         const appVerifier = window.recaptchaVerifier;
 
-        let fullPhone = form.phone.value;
-        // Add +91 if not present
-        if (!fullPhone.startsWith('+')) {
-          fullPhone = '+91' + fullPhone.replace(/^0+/, '');
-        }
-        // Start phone auth
-        auth.signInWithPhoneNumber(fullPhone, appVerifier)
-          .then((confirmationResult) => {
-            window.confirmationResult = confirmationResult;
-            otpStatus.textContent = "OTP sent to your mobile. Please enter to confirm your booking.";
-          })
-          .catch((error) => {
-            console.error("OTP send error:", error);
-            otpStatus.textContent = "Failed to send OTP. Please check your mobile number and try again.";
-            confirmBookingBtn.style.display = '';
-            otpSection.style.display = 'none';
-          });
-      });
-    }
+let fullPhone = form.phone.value;
+// Add +91 if not present
+if (!fullPhone.startsWith('+')) {
+  fullPhone = '+91' + fullPhone.replace(/^0+/, '');
+}
+
+// Start phone auth
+signInWithPhoneNumber(auth, fullPhone, appVerifier)
+  .then((confirmationResult) => {
+    window.confirmationResult = confirmationResult;
+    otpStatus.textContent = "OTP sent to your mobile. Please enter to confirm your booking.";
+  })
+  .catch((error) => {
+    console.error("OTP send error:", error);
+    otpStatus.textContent = "Failed to send OTP. Please check your mobile number and try again.";
+    confirmBookingBtn.style.display = '';
+    otpSection.style.display = 'none';
+  });
+
 
     // Handle OTP submit
     if (submitOtpBtn) {
