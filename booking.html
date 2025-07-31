@@ -301,13 +301,22 @@
 
         // Setup Firebase reCAPTCHA
         if (!window.recaptchaVerifier) {
-          window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
-            size: 'invisible',
-            callback: (response) => {
-              // reCAPTCHA solved - will proceed with submitPhoneNumberAuth()
-            }
-          });
-        }
+  window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+    'size': 'invisible',
+    'callback': (response) => {
+      console.log("reCAPTCHA solved", response);
+      // Optionally trigger OTP here
+    },
+    'expired-callback': () => {
+      console.warn("reCAPTCHA expired. Solve it again.");
+    }
+  });
+
+  // Render it (optional but good for control)
+  window.recaptchaVerifier.render().then((widgetId) => {
+    window.recaptchaWidgetId = widgetId;
+  });
+}
         const appVerifier = window.recaptchaVerifier;
 
         let fullPhone = form.phone.value;
