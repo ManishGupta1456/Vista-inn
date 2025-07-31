@@ -87,8 +87,7 @@
 
   <script>
     // Firebase config (replace with your Firebase project's config)
-   import { initializeApp } from "firebase/app";
-import { getAuth, RecaptchaVerifier, signInWithPhoneNumber } from "firebase/auth";
+   
     const firebaseConfig = {
       apiKey: "AIzaSyC5gC1rUjbvk4L3cmiLHNKLkSuEgkduWys",
       authDomain: "hotel-vista-inn.firebaseapp.com",
@@ -97,8 +96,8 @@ import { getAuth, RecaptchaVerifier, signInWithPhoneNumber } from "firebase/auth
       messagingSenderId: "17658781294",
       appId: "1:17658781294:web:88703a4966c049a8bed07f"
     };
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
+    firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
 
     // Supabase
     const { createClient } = supabase;
