@@ -2,32 +2,75 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Book Your Stay – Vista Inn</title>
-  <script src="https://www.google.com/recaptcha/enterprise.js?render= Lf_RJUrAAAAAMxOuPatlQF6Zr8V7GLw1rVJbcak" async defer></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Check out current special offers at Hotel Vista Inn near Ranthambore National Park Sawai Madhopur. Book your stay today!" />
+  <meta property="og:title" content="Special Offers – Hotel Vista Inn" />
+  <meta property="og:description" content="Book comfortable and luxury stay at Hotel Vista Inn near Ranthambore Tiger Reserve Sawai Madhopur." />
+  <meta property="og:url" content="https://vistahotels.in/booking.html" />
+
+  <!-- Favicon -->
+  <link rel="icon" href="images/favicon.ico" type="image/x-icon" />
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- reCAPTCHA -->
+  <script src="https://www.google.com/recaptcha/enterprise.js?render=Lf_RJUrAAAAAMxOuPatlQF6Zr8V7GLw1rVJbcak"></script>
 </head>
 <body>
-  <form id="booking-form">
-    <input type="text" name="name" placeholder="Name" required />
-    <input type="email" name="email" placeholder="Email" required />
-    <input type="tel" name="phone" placeholder="Phone" required id="phone-input"/>
-    <input type="date" name="checkin" required />
-    <input type="date" name="checkout" required />
-    <select name="roomtype" id="roomtype">
-      <option value="double">Double</option>
-      <option value="single">Single</option>
-    </select>
-    <input type="number" name="guests" id="guests" min="1" max="2" />
-    <div id="live-price"></div>
-    <button id="confirm-booking-btn" type="submit">Confirm</button>
-  </form>
-  <div id="otp-section" style="display:none;">
-    <input type="text" id="otp-input" maxlength="6" placeholder="Enter OTP"/>
-    <button id="submit-otp-btn">Submit OTP</button>
-    <div id="otp-status"></div>
-    <div id="recaptcha-container"></div>
-  </div>
+  <header class="site-header">
+    <div class="brand">
+      <img src="images/logo.png" alt="Hotel Vista Inn Logo" class="logo-img" />
+      <h1 class="hotel-name">Hotel Vista Inn</h1>
+    </div>
+    <p>Ranthambore, Sawai Madhopur</p>
+    <nav class="main-nav">
+      <a href="index.html">Home</a>
+      <a href="booking.html">Book Now</a>
+    </nav>
+  </header>
+
+  <main class="booking-form">
+    <h2>Reservation Details</h2>
+    <form id="booking-form">
+      <label>Full Name: <input type="text" name="name" required /></label>
+      <label>Email: <input type="email" name="email" required /></label>
+      <label>Phone: <input type="tel" name="phone" required id="phone-input" /></label>
+      <label>Check-in Date: <input type="date" name="checkin" required /></label>
+      <label>Check-out Date: <input type="date" name="checkout" required /></label>
+      <label>Number of Guests: <input type="number" name="guests" id="guests" min="1" max="2" required /></label>
+      <label>Room Type:
+        <select name="roomtype" id="roomtype" required>
+          <option value="double">Deluxe Double Room</option>
+          <option value="single">Deluxe Single Room</option>
+        </select>
+      </label>
+      <p id="live-price" style="font-weight: bold; margin: 10px 0;"></p>
+      <button type="submit" id="confirm-booking-btn">Confirm Booking</button>
+    </form>
+
+    <div id="otp-section" style="display: none; margin-top: 20px;">
+      <label>Enter OTP:
+        <input type="text" id="otp-input" maxlength="6" required />
+      </label>
+      <button id="submit-otp-btn">Submit OTP</button>
+      <div id="otp-status" style="color: red; margin-top: 10px;"></div>
+      <div id="recaptcha-container"></div>
+    </div>
+  </main>
+
+  <footer>
+    <p>© 2025 Vista Inn. All rights reserved.</p>
+  </footer>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+  <!-- Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Main logic -->
   <script type="module" src="booking.js"></script>
 </body>
 </html>
