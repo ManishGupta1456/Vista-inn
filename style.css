@@ -396,12 +396,14 @@ text-align: center;
   text-decoration: none;
 }
 
-/* FOOTER: "Back to Home" link in yellow */
+/* Make footer 'Back to Home' link yellow, even if visited */
 footer a[href="index.html"] {
   color: #ffd700 !important;
   font-weight: bold;
   text-decoration: underline;
-  transition: color 0.2s;
+}
+footer a[href="index.html"]:visited {
+  color: #ffd700 !important;
 }
 footer a[href="index.html"]:hover,
 footer a[href="index.html"]:focus {
