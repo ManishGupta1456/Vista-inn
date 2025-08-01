@@ -425,11 +425,13 @@ text-align: center;
     height: 60px;
     max-width: 60px;
   }
-
+.main-nav {
+    gap: 0.5rem;  /* or even 0.3rem, adjust as needed */
+  }
   /* Enlarge nav links for mobile */
   .main-nav a {
     font-size: 1rem;
     padding: 0.6em 1.2em;
-    gap: 0.5rem;
+    
   }
 }
