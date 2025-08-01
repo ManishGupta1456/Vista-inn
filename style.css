@@ -190,11 +190,12 @@ body {
 }
 
 .experience-section li {
-  padding: 2rem 1rem;
+  padding: 0.5rem 0rem;
   border-bottom: 1px solid #eee;
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  font-size: clamp(1rem, 1.5vw, 1.1rem);
   
 }
 
