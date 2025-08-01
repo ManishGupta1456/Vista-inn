@@ -430,5 +430,6 @@ text-align: center;
   .main-nav a {
     font-size: 1rem;
     padding: 0.6em 1.2em;
+    gap: 0.5rem;
   }
 }
