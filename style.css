@@ -418,17 +418,17 @@ text-align: center;
 @media (max-width: 600px) {
   /* Shrink hotel name and logo for mobile */
   .hotel-name {
-    font-size: 1.3rem !important;
+    font-size: 2rem !important;
     white-space: nowrap;
   }
   .logo-img {
-    height: 40px;
-    max-width: 40px;
+    height: 60px;
+    max-width: 60px;
   }
 
   /* Enlarge nav links for mobile */
   .main-nav a {
-    font-size: 1.25rem;
+    font-size: 1rem;
     padding: 0.6em 1.2em;
   }
 }
