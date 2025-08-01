@@ -8,7 +8,7 @@
   <meta property="og:title" content="Special Offers – Hotel Vista Inn" />
   <meta property="og:description" content="Book comfertable and luxary stay at Hotel Vista Inn near Ranthambore Tiger Reserve Sawai Madhopur." />
   <meta property="og:url" content="https://vistahotels.in/booking.html " />
-  <script src="https://www.google.com/recaptcha/enterprise.js?render=6Lf_RJUrAAAAAMxOuPatlQF6Zr8V7GLw1rVJbcak"></script>
+  
   <!-- Favicon -->
   <link rel="icon" href="images/favicon.ico" type="image/x-icon">
 
@@ -78,14 +78,13 @@
 
   <!-- Supabase SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <!-- Firebase SDK -->
-  <!-- Firebase App (the core Firebase SDK) -->
-  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
-  <!-- Firebase Auth -->
-  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+  <!-- Modular Firebase SDKs (ESM CDN) -->
+  <script type="module">
+    // Import Modular Firebase
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
+    import { getAuth, signInWithPhoneNumber, RecaptchaVerifier } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js";
 
-  <script>
-    // Firebase config (replace with your Firebase project's config)
+    // Your Firebase config
     const firebaseConfig = {
       apiKey: "AIzaSyC5gC1rUjbvk4L3cmiLHNKLkSuEgkduWys",
       authDomain: "hotel-vista-inn.firebaseapp.com",
@@ -94,8 +93,10 @@
       messagingSenderId: "17658781294",
       appId: "1:17658781294:web:88703a4966c049a8bed07f"
     };
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
 
     // Supabase
     const { createClient } = supabase;
@@ -103,6 +104,7 @@
       'https://fvfhptpkyntqijtpgdse.supabase.co',
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ2ZmhwdHBreW50cWlqdHBnZHNlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEzNDk4OTAsImV4cCI6MjA2NjkyNTg5MH0.HFVj4oZ_acMOmLiL7ix-G8DahuWzmL9mqDkuvjr8HRA'
     );
+
     // 🔤 Step 1: Generate 5-char alphanumeric Booking ID with prefix
     function generateBookingID(prefix = "A") {
       const chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -199,12 +201,15 @@
     let bookingFormData = {};
     let booking_id_for_confirm = null;
 
+    // DOM elements
     const form = document.getElementById('booking-form');
     const otpSection = document.getElementById('otp-section');
     const otpInput = document.getElementById('otp-input');
     const submitOtpBtn = document.getElementById('submit-otp-btn');
     const confirmBookingBtn = document.getElementById('confirm-booking-btn');
     const otpStatus = document.getElementById('otp-status');
+
+    let recaptchaVerifier;
 
     if (form) {
       form.addEventListener('submit', async (e) => {
@@ -297,24 +302,23 @@
         otpSection.style.display = 'block';
         otpStatus.textContent = "Sending OTP to your mobile, please wait...";
 
-        // Setup Firebase reCAPTCHA
-        if (!window.recaptchaVerifier) {
-          window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
+        // Setup Firebase reCAPTCHA (modular API)
+        if (!recaptchaVerifier) {
+          recaptchaVerifier = new RecaptchaVerifier('recaptcha-container', {
             size: 'invisible',
             callback: (response) => {
-              // reCAPTCHA solved - will proceed with submitPhoneNumberAuth()
+              // reCAPTCHA solved, allow send OTP
             }
-          });
+          }, auth);
         }
-        const appVerifier = window.recaptchaVerifier;
 
         let fullPhone = form.phone.value;
-        // Add +91 if not present
         if (!fullPhone.startsWith('+')) {
           fullPhone = '+91' + fullPhone.replace(/^0+/, '');
         }
-        // Start phone auth
-        auth.signInWithPhoneNumber(fullPhone, appVerifier)
+
+        // Modular API: signInWithPhoneNumber
+        signInWithPhoneNumber(auth, fullPhone, recaptchaVerifier)
           .then((confirmationResult) => {
             window.confirmationResult = confirmationResult;
             otpStatus.textContent = "OTP sent to your mobile. Please enter to confirm your booking.";
@@ -328,7 +332,7 @@
       });
     }
 
-    // Handle OTP submit
+    // Handle OTP submit (modular API)
     if (submitOtpBtn) {
       submitOtpBtn.addEventListener('click', async () => {
         const otpValue = otpInput.value;
@@ -340,7 +344,6 @@
         otpStatus.textContent = "Verifying OTP...";
         window.confirmationResult.confirm(otpValue)
           .then(async (result) => {
-            // OTP success, proceed to booking
             otpStatus.textContent = "OTP verified! Completing your booking...";
             try {
               const booking_id = await generateUniqueBookingID("A");  // Prefix A for 2025
