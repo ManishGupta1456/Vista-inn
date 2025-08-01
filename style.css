@@ -431,7 +431,7 @@ text-align: center;
   /* Enlarge nav links for mobile */
   .main-nav a {
     font-size: 1rem;
-    padding: 0.6em 1.2em;
+    padding: 0.3em 0.6em;
     
   }
 }
