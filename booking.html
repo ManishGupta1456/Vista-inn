@@ -356,7 +356,8 @@
                 guest_name: bookingFormData.name,
                 guest_email: bookingFormData.email,
                 guest_phone: bookingFormData.phone,
-                booking_id: booking_id  // ✅ Include new Booking ID
+                booking_id: booking_id,  // ✅ Include new Booking ID
+                guests: bookingFormData.guests
               }]);
               if (error) {
                 otpStatus.textContent = "❌ Booking failed. Try again.";
@@ -374,7 +375,7 @@
                   room_type: bookingFormData.room_type,
                   checkin: bookingFormData.checkin,
                   checkout: bookingFormData.checkout,
-                  booking_id: booking_id
+                  booking_id: booking_id,
                   guests: bookingFormData.guests
                 })
               })
