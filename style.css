@@ -204,7 +204,11 @@ body {
   color: #2e3b4e;
   font-weight: bold;
 }
-
+@media (max-width: 600px) {
+  .experience-section li {
+    font-size: 1rem !important; /* Force readable size for mobile */
+  }
+}
 .rooms, .contact {
   padding: 2rem;
   max-width: 800px;
@@ -374,4 +378,36 @@ text-align: center;
   height: auto;
   display: block;
   object-fit: cover;
+}
+.book-now-link {
+  display: inline-block;
+  background-color: #ffd700;
+  color: #1d2938 !important;
+  padding: 12px 28px;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  text-decoration: none;
+  margin-top: 1rem;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+  transition: background 0.2s, color 0.2s;
+}
+.book-now-link:hover,
+.book-now-link:focus {
+  background-color: #ffc200;
+  color: #222 !important;
+  text-decoration: none;
+}
+
+/* FOOTER: "Back to Home" link in yellow */
+footer a[href="index.html"] {
+  color: #ffd700 !important;
+  font-weight: bold;
+  text-decoration: underline;
+  transition: color 0.2s;
+}
+footer a[href="index.html"]:hover,
+footer a[href="index.html"]:focus {
+  color: #fff700 !important;
 }
