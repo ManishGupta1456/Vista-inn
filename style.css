@@ -410,12 +410,8 @@ text-align: center;
 }
 /* --- other styles above --- */
 @media (max-width: 600px) {
-  body {
-    background: lime !important;
-  }
-  .experience-section li {
-    font-size: 2rem !important;
-    color: red !important;
-    background: yellow !important;
+    .experience-section li {
+    font-size: 1rem !important;
+    
   }
 }
