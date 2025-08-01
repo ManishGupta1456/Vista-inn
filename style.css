@@ -408,8 +408,12 @@ text-align: center;
 .back-home-link:focus {
   color: #ffd700 !important;
 }
+/* --- other styles above --- */
 @media (max-width: 600px) {
-  section.experience-section ul li {
+  body {
+    background: lime !important;
+  }
+  .experience-section li {
     font-size: 2rem !important;
     color: red !important;
     background: yellow !important;
