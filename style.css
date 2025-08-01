@@ -415,3 +415,4 @@ footer a[href="index.html"]:focus {
     font-size: 1rem !important; /* Force readable size for mobile */
   }
 }
+body { background: #ffb347 !important; }
