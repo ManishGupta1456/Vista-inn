@@ -190,7 +190,7 @@ body {
 }
 
 .experience-section li {
-  padding: 2rem 1;
+  padding: 2rem 1rem;
   border-bottom: 1px solid #eee;
   display: flex;
   align-items: center;
