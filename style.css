@@ -396,3 +396,15 @@ text-align: center;
   text-decoration: none;
 }
 
+.back-home-link {
+  color: #ffd700 !important;
+  font-weight: bold !important;
+  text-decoration: underline !important;
+  background: transparent !important;
+}
+.back-home-link:visited,
+.back-home-link:active,
+.back-home-link:hover,
+.back-home-link:focus {
+  color: #ffd700 !important;
+}
