@@ -426,7 +426,7 @@ text-align: center;
     max-width: 60px;
   }
 .main-nav {
-    gap: 0.5rem;  /* or even 0.3rem, adjust as needed */
+    gap: 0.3rem;  /* or even 0.3rem, adjust as needed */
   }
   /* Enlarge nav links for mobile */
   .main-nav a {
