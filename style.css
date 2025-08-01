@@ -416,3 +416,15 @@ footer a[href="index.html"]:focus {
   }
 }
 body { background: #ffb347 !important; }
+footer p a[href="index.html"],
+footer p a[href="index.html"]:visited,
+footer p a[href="index.html"]:active,
+footer p a[href="index.html"]:hover,
+footer p a[href="index.html"]:focus {
+  color: #ffd700 !important;
+  font-weight: bold !important;
+  text-decoration: underline !important;
+  background: transparent !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
