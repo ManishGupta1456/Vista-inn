@@ -58,6 +58,7 @@ for (const date of dates) {
     },
     body: JSON.stringify({
       to: [{ email, name }],
+      cc: [{ email: "vista.ranthambore@gmail.com", name: "Hotel Vista Inn" }],
       templateId: 1,
       params: {
         guest_name: name,
@@ -90,3 +91,4 @@ for (const date of dates) {
     };
   }
 };
+
