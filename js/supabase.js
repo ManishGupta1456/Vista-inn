@@ -6,7 +6,7 @@ const { createClient } = supabase;
 async function login() {
   const email = document.getElementById('email').value;
   const password = document.getElementById('password').value;
-  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
 
   if (error) {
     alert("Login failed: " + error.message);
@@ -34,5 +34,6 @@ async function fetchBooking() {
   document.getElementById('guest-state').value = data.state;
   document.getElementById('amount').value = data.total_amount;
 }
+
 
 
