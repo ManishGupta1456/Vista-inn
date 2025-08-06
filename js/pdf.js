@@ -3,7 +3,7 @@ async function generateInvoice() {
     name: "Hotel XYZ",
     address: "1234, Main Road, Jaipur, Rajasthan, 302001",
     gstin: "08ABCDE1234F1Z5",
-    logo: "https://your-hotel-logo-url/logo.png"
+    logo: "images/logo.png"
   };
 
   const guestName = document.getElementById('guest-name').value;
@@ -119,3 +119,4 @@ async function generateInvoice() {
 
   pdfMake.createPdf(docDefinition).download(`${invoiceNumber}.pdf`);
 }
+
