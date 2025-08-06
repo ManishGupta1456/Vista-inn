@@ -11,3 +11,4 @@ function calculateGST(amount) {
     total: parseFloat(total.toFixed(2))
   };
 }
+
