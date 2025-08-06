@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="css/style.css">
   <script src="https://cdn.jsdelivr.net/npm/pdfmake@0.2.7/build/pdfmake.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/pdfmake@0.2.7/build/vfs_fonts.js"></script>
-  <script src="https://unpkg.com/@supabase/supabase-js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="container py-5">
   <div id="login-section">
@@ -22,20 +22,17 @@
     <input type="text" id="booking-id" class="form-control my-2" placeholder="Booking ID (optional)">
     <button onclick="fetchBooking()" class="btn btn-secondary mb-3">Fetch Booking</button>
 
-    <input type="text" id="Guest-name" class="form-control my-2" placeholder="Guest Name">
-    <input type="text" id="Guest-gstin" class="form-control my-2" placeholder="Guest GSTIN (optional)">
+    <input type="text" id="customer-name" class="form-control my-2" placeholder="Guest Name">
+    <input type="text" id="customer-gstin" class="form-control my-2" placeholder="Guest GSTIN (optional)">
+    <input type="text" id="customer-state" class="form-control my-2" placeholder="Guest State">
     <input type="number" id="amount" class="form-control my-2" placeholder="Room Tariff (₹)">
     
     <button onclick="generateInvoice()" class="btn btn-success">Generate Invoice</button>
     <button onclick="logout()" class="btn btn-danger mt-3">Logout</button>
   </div>
- <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-   <script src="js/supabase.js"></script>
+
+  <script src="js/supabase.js"></script>
   <script src="js/gst.js"></script>
   <script src="js/pdf.js"></script>
 </body>
 </html>
-
-
-
-
