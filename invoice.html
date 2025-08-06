@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>GST Invoice Generator</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/pdfmake@0.2.7/build/pdfmake.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/pdfmake@0.2.7/build/vfs_fonts.js"></script>
+  <script src="https://unpkg.com/@supabase/supabase-js"></script>
+</head>
+<body class="container py-5">
+  <div id="login-section">
+    <h2>Admin Login</h2>
+    <input type="email" id="email" class="form-control my-2" placeholder="Email">
+    <input type="password" id="password" class="form-control my-2" placeholder="Password">
+    <button onclick="login()" class="btn btn-primary">Login</button>
+  </div>
+
+  <div id="invoice-app" style="display:none;">
+    <h2>Create GST Invoice</h2>
+    <input type="text" id="booking-id" class="form-control my-2" placeholder="Booking ID (optional)">
+    <button onclick="fetchBooking()" class="btn btn-secondary mb-3">Fetch Booking</button>
+
+    <input type="text" id="Guest-name" class="form-control my-2" placeholder="Guest Name">
+    <input type="text" id="Guest-gstin" class="form-control my-2" placeholder="Guest GSTIN (optional)">
+    <input type="number" id="amount" class="form-control my-2" placeholder="Room Tariff (₹)">
+    
+    <button onclick="generateInvoice()" class="btn btn-success">Generate Invoice</button>
+    <button onclick="logout()" class="btn btn-danger mt-3">Logout</button>
+  </div>
+
+  <script src="js/supabase.js"></script>
+  <script src="js/gst.js"></script>
+  <script src="js/pdf.js"></script>
+</body>
+</html>
