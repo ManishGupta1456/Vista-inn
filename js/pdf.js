@@ -14,13 +14,13 @@ async function generateInvoice() {
   const amount = parseFloat(document.getElementById('amount').value);
   const bookingId = document.getElementById('booking-id').value;
 
-  // Calculate total nights (checkoutDate - checkinDate - 1)
+  // Calculate total nights (checkoutDate - checkinDate - 0)
   let totalNights = '';
   if (checkinDate && checkoutDate) {
     const checkin = new Date(checkinDate);
     const checkout = new Date(checkoutDate);
     const diffTime = checkout.getTime() - checkin.getTime();
-    totalNights = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)) - 1); // as per your rule
+    totalNights = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)) - 0); // as per your rule
   }
 
   const gst = calculateGST(amount);
@@ -150,3 +150,4 @@ async function generateInvoice() {
 
   pdfMake.createPdf(docDefinition).download(`${invoiceNumber}.pdf`);
 }
+
