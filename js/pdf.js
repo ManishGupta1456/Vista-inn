@@ -13,12 +13,13 @@ async function getNextInvoiceNumber() {
 }
 
 async function generateInvoice() {
-  const invoiceNumber = await getNextInvoiceNumber();
   const hotel = {
     name: "Hotel XYZ",
     address: "1234, Main Road, Jaipur, Rajasthan, 302001",
     gstin: "08ABCDE1234F1Z5"
   };
+
+  const invoiceNumber = await getNextInvoiceNumber(); // <--- only ONCE
 
   const guestName = document.getElementById('guest-name').value;
   const gstin = document.getElementById('guest-gstin').value;
@@ -29,23 +30,22 @@ async function generateInvoice() {
   const amount = parseFloat(document.getElementById('amount').value);
   const bookingId = document.getElementById('booking-id').value;
 
-  // Calculate total nights (checkoutDate - checkinDate - 1)
+  // Calculate total nights
   let totalNights = '';
   if (checkinDate && checkoutDate) {
     const checkin = new Date(checkinDate);
     const checkout = new Date(checkoutDate);
     const diffTime = checkout.getTime() - checkin.getTime();
-    totalNights = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24))); // as per your rule
+    totalNights = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1);
   }
 
   const gst = calculateGST(amount);
-  const invoiceNumber = 'INV-' + Date.now();
   const date = new Date().toLocaleDateString();
 
   // Save to Supabase
   const { error } = await supabaseClient.from('invoices').insert([{
     booking_id: bookingId || null,
-    invoice_number: invoiceNumber,
+    invoice_number: invoiceNumber, // <-- use only this
     invoice_date: new Date().toISOString(),
     guest_name: guestName,
     guest_gstin: gstin || null,
@@ -66,7 +66,7 @@ async function generateInvoice() {
 
   if (error) return alert("Failed to save invoice");
 
-  // PDF layout as per Indian GST Invoice Format
+  // PDF layout
   const docDefinition = {
     content: [
       [
@@ -150,5 +150,3 @@ async function generateInvoice() {
 
   pdfMake.createPdf(docDefinition).download(`${invoiceNumber}.pdf`);
 }
-
-
