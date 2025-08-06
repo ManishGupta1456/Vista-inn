@@ -6,9 +6,9 @@ async function generateInvoice() {
     logo: "https://your-hotel-logo-url/logo.png"
   };
 
-  const name = document.getElementById('customer-name').value;
-  const gstin = document.getElementById('customer-gstin').value;
-  const state = document.getElementById('customer-state').value;
+  const guestName = document.getElementById('guest-name').value;
+  const gstin = document.getElementById('guest-gstin').value;
+  const guestEmail = document.getElementById('guest-email').value;
   const amount = parseFloat(document.getElementById('amount').value);
   const bookingId = document.getElementById('booking-id').value;
 
@@ -21,9 +21,10 @@ async function generateInvoice() {
     booking_id: bookingId || null,
     invoice_number: invoiceNumber,
     invoice_date: new Date().toISOString(),
-    guest_name: name,
+    guest_name: guestName,
     guest_gstin: gstin || null,
-    supply_state: state || "Rajasthan",
+    guest_email: guestEmail || null,
+    supply_state: "Rajasthan",
     taxable_value: amount,
     cgst: gst.cgst,
     sgst: gst.sgst,
@@ -65,9 +66,9 @@ async function generateInvoice() {
         columns: [
           [
             { text: 'Billed To:', style: 'subHeader' },
-            { text: name },
+            { text: guestName },
             { text: `GSTIN: ${gstin || 'N/A'}` },
-            { text: `State: ${state}` }
+            { text: `Email: ${guestEmail || 'N/A'}` }
           ]
         ],
         margin: [0, 10]
