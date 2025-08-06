@@ -38,5 +38,8 @@ async function fetchBooking() {
 
   document.getElementById('guest-name').value = data.guest_name || '';
   document.getElementById('guest-email').value = data.guest_email || '';
+  document.getElementById('room-type').value = data.room_type || '';
+  document.getElementById('checkin-date').value = data.checkin_date || '';
+  document.getElementById('checkout-date').value = data.checkout_date || '';
   document.getElementById('amount').value = data.total_amount || '';
 }
