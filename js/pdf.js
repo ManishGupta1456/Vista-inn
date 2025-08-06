@@ -3,14 +3,25 @@ async function generateInvoice() {
     name: "Hotel XYZ",
     address: "1234, Main Road, Jaipur, Rajasthan, 302001",
     gstin: "08ABCDE1234F1Z5"
-    // logo removed for now
   };
 
   const guestName = document.getElementById('guest-name').value;
   const gstin = document.getElementById('guest-gstin').value;
   const guestEmail = document.getElementById('guest-email').value;
+  const roomType = document.getElementById('room-type').value;
+  const checkinDate = document.getElementById('checkin-date').value;
+  const checkoutDate = document.getElementById('checkout-date').value;
   const amount = parseFloat(document.getElementById('amount').value);
   const bookingId = document.getElementById('booking-id').value;
+
+  // Calculate total nights (checkoutDate - checkinDate - 1)
+  let totalNights = '';
+  if (checkinDate && checkoutDate) {
+    const checkin = new Date(checkinDate);
+    const checkout = new Date(checkoutDate);
+    const diffTime = checkout.getTime() - checkin.getTime();
+    totalNights = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)) - 1); // as per your rule
+  }
 
   const gst = calculateGST(amount);
   const invoiceNumber = 'INV-' + Date.now();
@@ -24,6 +35,10 @@ async function generateInvoice() {
     guest_name: guestName,
     guest_gstin: gstin || null,
     guest_email: guestEmail || null,
+    room_type: roomType || null,
+    checkin_date: checkinDate || null,
+    checkout_date: checkoutDate || null,
+    total_night: totalNights,
     supply_state: "Rajasthan",
     taxable_value: amount,
     cgst: gst.cgst,
@@ -59,6 +74,17 @@ async function generateInvoice() {
             { text: guestName },
             { text: `GSTIN: ${gstin || 'N/A'}` },
             { text: `Email: ${guestEmail || 'N/A'}` }
+          ]
+        ],
+        margin: [0, 10]
+      },
+      {
+        columns: [
+          [
+            { text: `Room Type: ${roomType || 'N/A'}` },
+            { text: `Check-in Date: ${checkinDate || 'N/A'}` },
+            { text: `Check-out Date: ${checkoutDate || 'N/A'}` },
+            { text: `Total Night(s): ${totalNights}` }
           ]
         ],
         margin: [0, 10]
