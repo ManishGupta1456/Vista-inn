@@ -1,4 +1,19 @@
+async function getNextInvoiceNumber() {
+  const { count, error } = await supabaseClient
+    .from('invoices')
+    .select('*', { count: 'exact', head: true });
+
+  if (error) {
+    alert("Error fetching invoice count");
+    throw error;
+  }
+
+  const nextNumber = (count || 0) + 1;
+  return 'INV-' + String(nextNumber).padStart(4, '0');
+}
+
 async function generateInvoice() {
+  const invoiceNumber = await getNextInvoiceNumber();
   const hotel = {
     name: "Hotel XYZ",
     address: "1234, Main Road, Jaipur, Rajasthan, 302001",
@@ -135,4 +150,5 @@ async function generateInvoice() {
 
   pdfMake.createPdf(docDefinition).download(`${invoiceNumber}.pdf`);
 }
+
 
