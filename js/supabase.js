@@ -28,7 +28,7 @@ async function fetchBooking() {
   const { data, error } = await supabaseClient
     .from('bookings')
     .select('*')
-    .eq('id', bookingId)
+    .eq('booking_id', bookingId)
     .single();
 
   if (error || !data) {
@@ -36,7 +36,7 @@ async function fetchBooking() {
     return;
   }
 
-  document.getElementById('customer-name').value = data.customer_name || '';
-  document.getElementById('customer-state').value = data.state || '';
+  document.getElementById('guest-name').value = data.guest_name || '';
+  document.getElementById('guest-email').value = data.guest_email || '';
   document.getElementById('amount').value = data.total_amount || '';
 }
