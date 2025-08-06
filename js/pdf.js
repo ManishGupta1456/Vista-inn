@@ -14,9 +14,9 @@ async function getNextInvoiceNumber() {
 
 async function generateInvoice() {
   const hotel = {
-    name: "Hotel XYZ",
-    address: "1234, Main Road, Jaipur, Rajasthan, 302001",
-    gstin: "08ABCDE1234F1Z5"
+    name: "Hotel Vista Inn",
+    address: "9A, Ranthambore Road, Patel Nagar, Sawai Madhopur, Rajasthan, 322001",
+    gstin: "08CLCPD8632E1ZB"
   };
 
   const invoiceNumber = await getNextInvoiceNumber(); // <--- only ONCE
@@ -36,7 +36,7 @@ async function generateInvoice() {
     const checkin = new Date(checkinDate);
     const checkout = new Date(checkoutDate);
     const diffTime = checkout.getTime() - checkin.getTime();
-    totalNights = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1);
+    totalNights = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 0);
   }
 
   const gst = calculateGST(amount);
@@ -150,3 +150,4 @@ async function generateInvoice() {
 
   pdfMake.createPdf(docDefinition).download(`${invoiceNumber}.pdf`);
 }
+
