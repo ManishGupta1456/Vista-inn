@@ -1,4 +1,8 @@
-
+const { createClient } = supabase;
+    const supabaseClient = createClient(
+      'https://fvfhptpkyntqijtpgdse.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ2ZmhwdHBreW50cWlqdHBnZHNlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEzNDk4OTAsImV4cCI6MjA2NjkyNTg5MH0.HFVj4oZ_acMOmLiL7ix-G8DahuWzmL9mqDkuvjr8HRA'
+    );
 async function login() {
   const email = document.getElementById('email').value;
   const password = document.getElementById('password').value;
@@ -30,4 +34,5 @@ async function fetchBooking() {
   document.getElementById('guest-state').value = data.state;
   document.getElementById('amount').value = data.total_amount;
 }
+
 
