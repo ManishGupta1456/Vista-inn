@@ -20,7 +20,7 @@ async function generateInvoice() {
     const checkin = new Date(checkinDate);
     const checkout = new Date(checkoutDate);
     const diffTime = checkout.getTime() - checkin.getTime();
-    totalNights = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)) - 1); // as per your rule
+    totalNights = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24))); // as per your rule
   }
 
   const gst = calculateGST(amount);
@@ -135,3 +135,4 @@ async function generateInvoice() {
 
   pdfMake.createPdf(docDefinition).download(`${invoiceNumber}.pdf`);
 }
+
