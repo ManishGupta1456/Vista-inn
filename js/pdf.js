@@ -1,4 +1,11 @@
 async function generateInvoice() {
+  const hotel = {
+    name: "Hotel XYZ",
+    address: "1234, Main Road, Jaipur, Rajasthan, 302001",
+    gstin: "08ABCDE1234F1Z5",
+    logo: "https://your-hotel-logo-url/logo.png"
+  };
+
   const name = document.getElementById('customer-name').value;
   const gstin = document.getElementById('customer-gstin').value;
   const state = document.getElementById('customer-state').value;
@@ -10,13 +17,13 @@ async function generateInvoice() {
   const date = new Date().toLocaleDateString();
 
   // Save to Supabase
-  const { error } = await supabase.from('invoices').insert([{
+  const { error } = await supabaseClient.from('invoices').insert([{
     booking_id: bookingId || null,
     invoice_number: invoiceNumber,
     invoice_date: new Date().toISOString(),
     guest_name: name,
     guest_gstin: gstin || null,
-    supply_state: "Rajasthan",
+    supply_state: state || "Rajasthan",
     taxable_value: amount,
     cgst: gst.cgst,
     sgst: gst.sgst,
@@ -28,26 +35,84 @@ async function generateInvoice() {
 
   if (error) return alert("Failed to save invoice");
 
-  // PDF layout
+  // PDF layout as per Indian GST Invoice Format
   const docDefinition = {
     content: [
+      {
+        columns: [
+          {
+            width: 100,
+            image: hotel.logo,
+            height: 60
+          },
+          [
+            { text: hotel.name, style: 'hotelName', width: '*' },
+            { text: hotel.address, style: 'hotelAddress' },
+            { text: `GSTIN: ${hotel.gstin}`, style: 'hotelGSTIN' }
+          ]
+        ],
+        margin: [0, 0, 0, 10]
+      },
       { text: 'TAX INVOICE', style: 'header' },
-      { text: `Invoice No: ${invoiceNumber}`, margin: [0, 10] },
-      { text: `Date: ${date}` },
-      { text: `Customer: ${name}` },
-      { text: `GSTIN: ${gstin || 'N/A'}` },
-      { text: `Place of Supply: Rajasthan` },
+      {
+        columns: [
+          { text: `Invoice No: ${invoiceNumber}\nDate: ${date}`, width: '50%' },
+          { text: `Booking ID: ${bookingId || 'N/A'}`, width: '50%' }
+        ],
+        margin: [0, 10]
+      },
+      {
+        columns: [
+          [
+            { text: 'Billed To:', style: 'subHeader' },
+            { text: name },
+            { text: `GSTIN: ${gstin || 'N/A'}` },
+            { text: `State: ${state}` }
+          ]
+        ],
+        margin: [0, 10]
+      },
       { text: '--------------------------------------', margin: [0, 10] },
-      { text: `HSN Code: 9963` },
-      { text: `Taxable Value: ₹${amount.toFixed(2)}` },
-      { text: `CGST @6%: ₹${gst.cgst.toFixed(2)}` },
-      { text: `SGST @6%: ₹${gst.sgst.toFixed(2)}` },
-      { text: `Total GST: ₹${gst.totalGst.toFixed(2)}` },
-      { text: `Total Invoice Value: ₹${gst.total.toFixed(2)}`, bold: true, margin: [0, 10] },
+      {
+        table: {
+          widths: ['*', 'auto', 'auto', 'auto', 'auto'],
+          body: [
+            [
+              { text: 'Description', style: 'tableHeader' },
+              { text: 'HSN/SAC', style: 'tableHeader' },
+              { text: 'Amount (₹)', style: 'tableHeader' },
+              { text: 'CGST @6%', style: 'tableHeader' },
+              { text: 'SGST @6%', style: 'tableHeader' }
+            ],
+            [
+              'Room Tariff',
+              '9963',
+              amount.toFixed(2),
+              gst.cgst.toFixed(2),
+              gst.sgst.toFixed(2)
+            ]
+          ]
+        }
+      },
+      {
+        columns: [
+          { text: '' },
+          [
+            { text: `Total GST: ₹${gst.totalGst.toFixed(2)}` },
+            { text: `Invoice Total: ₹${gst.total.toFixed(2)}`, bold: true }
+          ]
+        ],
+        margin: [0, 10]
+      },
       { text: 'Thank you for choosing our hotel.', italics: true, margin: [0, 20] }
     ],
     styles: {
-      header: { fontSize: 20, bold: true, alignment: 'center' }
+      header: { fontSize: 20, bold: true, alignment: 'center' },
+      hotelName: { fontSize: 18, bold: true },
+      hotelAddress: { fontSize: 12 },
+      hotelGSTIN: { fontSize: 12, italics: true },
+      subHeader: { bold: true, decoration: 'underline', margin: [0, 5, 0, 5] },
+      tableHeader: { bold: true, fillColor: '#eeeeee' }
     }
   };
 
