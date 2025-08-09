@@ -107,7 +107,7 @@ function calculateGST(amount) {
     cgst: +cgst.toFixed(2),
     sgst: +sgst.toFixed(2),
     totalGst: +(cgst + sgst).toFixed(2),
-    total: +(amount + cgst + sgst).toFixed(2)
+    total_invoice_value: +(amount + cgst + sgst).toFixed(2)
   };
 }
 
@@ -270,4 +270,5 @@ function generateInvoicePDF(inv) {
 
 </body>
 </html>
+
 
