@@ -157,38 +157,65 @@ async function getInvoiceByBookingId(bookingId) {
 // Generate invoice
 async function generateInvoice() {
   const bookingId = document.getElementById('booking-id').value.trim();
-  const { data: existing } = await getInvoiceByBookingId(bookingId);
-  let invoiceData;
   
+  // Make sure to check existing *before* any insert
+  const { data: existing } = await getInvoiceByBookingId(bookingId);
   if (existing) {
-    invoiceData = existing;
-  } else {
-    const inv = {
-      booking_id: bookingId,
-      invoice_date: new Date().toISOString(),
-      guest_name: document.getElementById('guest-name').value,
-      guest_gstin: document.getElementById('guest-gstin').value || null,
-      guest_email: document.getElementById('guest-email').value || null,
-      room_type: document.getElementById('room-type').value,
-      checkin_date: document.getElementById('checkin-date').value,
-      checkout_date: document.getElementById('checkout-date').value,
-      total_night: +document.getElementById('total-nights').value || 0,
-      room_tariff: +document.getElementById('room-tariff').value || 0,
-      discount: +document.getElementById('discount').value || 0,
-      taxable_value: +document.getElementById('taxable-value').value || 0,
-      supply_state: 'Rajasthan',
-      ...calculateGST(+document.getElementById('taxable-value').value || 0),
-      is_b2b: !!document.getElementById('guest-gstin').value
-    };
-
-    const { data: inserted, error } = await supabaseClient.from('invoices').insert([inv]).select();
-    if (error || !inserted || !inserted[0]) { alert('Save failed'); return; }
-    const serialId = inserted[0].serial_id;
-    const invoiceNumber = 'INV-' + String(serialId).padStart(4, '0');
-    await supabaseClient.from('invoices').update({ invoice_number: invoiceNumber }).eq('serial_id', serialId);
-    invoiceData = { ...inserted[0], invoice_number: invoiceNumber };
+    generateInvoicePDF(existing);
+    return;
   }
 
+  // Prepare new invoice data
+  const taxableValue = +document.getElementById('taxable-value').value || 0;
+  const gstData = calculateGST(taxableValue);
+
+  const inv = {
+    booking_id: bookingId,
+    invoice_date: new Date().toISOString(),
+    guest_name: document.getElementById('guest-name').value,
+    guest_gstin: document.getElementById('guest-gstin').value || null,
+    guest_email: document.getElementById('guest-email').value || null,
+    room_type: document.getElementById('room-type').value,
+    checkin_date: document.getElementById('checkin-date').value,
+    checkout_date: document.getElementById('checkout-date').value,
+    total_night: +document.getElementById('total-nights').value || 0,
+    room_tariff: +document.getElementById('room-tariff').value || 0,
+    discount: +document.getElementById('discount').value || 0,
+    taxable_value: taxableValue,
+    cgst: gstData.cgst,
+    sgst: gstData.sgst,
+    total_gst: gstData.total_gst,
+    total_invoice_value: gstData.total_invoice_value,
+    supply_state: 'Rajasthan',
+    is_b2b: !!document.getElementById('guest-gstin').value
+  };
+
+  // Step 1: Insert new row without invoice_number
+  const { data: inserted, error: insertError } = await supabaseClient
+    .from('invoices')
+    .insert([inv])
+    .select();
+  
+  if (insertError) {
+    alert('Insert failed: ' + insertError.message);
+    return;
+  }
+
+  const serialId = inserted[0].serial_id;
+  const invoiceNumber = 'INV-' + String(serialId).padStart(4, '0');
+
+  // Step 2: Update invoice_number only for this row
+  const { error: updateError } = await supabaseClient
+    .from('invoices')
+    .update({ invoice_number: invoiceNumber })
+    .eq('serial_id', serialId);
+
+  if (updateError) {
+    alert('Update failed: ' + updateError.message);
+    return;
+  }
+
+  const invoiceData = { ...inserted[0], invoice_number: invoiceNumber };
   generateInvoicePDF(invoiceData);
 }
 
@@ -270,6 +297,7 @@ function generateInvoicePDF(inv) {
 
 </body>
 </html>
+
 
 
 
