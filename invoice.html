@@ -206,12 +206,6 @@ async function generateInvoice() {
     .update({ invoice_number: invoiceNumber })
     .eq('serial_id', serialId);
 
-
-
-  const invoiceData = { ...inserted[0], invoice_number: invoiceNumber };
-  generateInvoicePDF(invoiceData);
-}
-
 // PDF generation (no HSN col, colorful)
 function generateInvoicePDF(inv) {
   const hotel = {
@@ -290,6 +284,7 @@ function generateInvoicePDF(inv) {
 
 </body>
 </html>
+
 
 
 
