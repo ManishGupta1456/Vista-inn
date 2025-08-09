@@ -133,7 +133,7 @@ function updateTaxableValue() {
 // Fetch booking
 async function fetchBooking() {
   const bookingId = document.getElementById('booking-id').value.trim();
-  const { data, error } = await supabaseClient.from('bookings').select('*').eq('booking_id', bookingId).single();
+  const { data, error } = await supabaseClient.from('bookings').select('*').eq('booking_id', bookingId).maybesingle();
   if (error || !data) {
     alert("Booking not found. Please fill manually.");
     return;
@@ -188,7 +188,7 @@ async function generateInvoice() {
     is_b2b: !!document.getElementById('guest-gstin').value
   };
 
-  // Insert first to get ID
+  // Step 1: Insert
   const { data: inserted, error: insertError } = await supabaseClient
     .from('invoices')
     .insert([inv])
@@ -199,13 +199,14 @@ async function generateInvoice() {
     return;
   }
 
-  const row = inserted[0];
-  const invoiceNumber = 'INV-' + String(row.serial_id).padStart(4, '0'); // adjust if PK is named differently
+  const serialId = inserted[0].serial_id;
+  const invoiceNumber = 'INV-' + String(serialId).padStart(4, '0');
 
+  // Step 2: Update invoice_number
   const { data: updated, error: updateError } = await supabaseClient
     .from('invoices')
     .update({ invoice_number: invoiceNumber })
-    .eq('serial_id', row.serial_id) // adjust column name to match DB
+    .eq('serial_id', serialId)
     .select();
 
   if (updateError) {
@@ -215,7 +216,6 @@ async function generateInvoice() {
 
   generateInvoicePDF(updated[0]);
 }
-
 // PDF generation (no HSN col, colorful)
 function generateInvoicePDF(inv) {
   const hotel = {
@@ -294,6 +294,7 @@ function generateInvoicePDF(inv) {
 
 </body>
 </html>
+
 
 
 
