@@ -158,14 +158,12 @@ async function getInvoiceByBookingId(bookingId) {
 async function generateInvoice() {
   const bookingId = document.getElementById('booking-id').value.trim();
   
-  // Make sure to check existing *before* any insert
   const { data: existing } = await getInvoiceByBookingId(bookingId);
   if (existing) {
     generateInvoicePDF(existing);
     return;
   }
 
-  // Prepare new invoice data
   const taxableValue = +document.getElementById('taxable-value').value || 0;
   const gstData = calculateGST(taxableValue);
 
@@ -190,33 +188,32 @@ async function generateInvoice() {
     is_b2b: !!document.getElementById('guest-gstin').value
   };
 
-  // Step 1: Insert new row without invoice_number
+  // Insert first to get ID
   const { data: inserted, error: insertError } = await supabaseClient
     .from('invoices')
     .insert([inv])
     .select();
-  
+
   if (insertError) {
     alert('Insert failed: ' + insertError.message);
     return;
   }
 
-  const serialId = inserted[0].serial_id;
-  const invoiceNumber = 'INV-' + String(serialId).padStart(4, '0');
+  const row = inserted[0];
+  const invoiceNumber = 'INV-' + String(row.serial_id).padStart(4, '0'); // adjust if PK is named differently
 
-  // Step 2: Update invoice_number only for this row
-  const { error: updateError } = await supabaseClient
+  const { data: updated, error: updateError } = await supabaseClient
     .from('invoices')
     .update({ invoice_number: invoiceNumber })
-    .eq('serial_id', serialId);
+    .eq('id', row.serial_id) // adjust column name to match DB
+    .select();
 
   if (updateError) {
     alert('Update failed: ' + updateError.message);
     return;
   }
 
-  const invoiceData = { ...inserted[0], invoice_number: invoiceNumber };
-  generateInvoicePDF(invoiceData);
+  generateInvoicePDF(updated[0]);
 }
 
 // PDF generation (no HSN col, colorful)
@@ -297,6 +294,7 @@ function generateInvoicePDF(inv) {
 
 </body>
 </html>
+
 
 
 
