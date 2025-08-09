@@ -2,40 +2,278 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>GST Invoice Generator</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-  <link rel="stylesheet" href="css/style.css">
+  <title>Secure GST Invoice Generator - Hotel Vista Inn</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/pdfmake@0.2.7/build/pdfmake.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/pdfmake@0.2.7/build/vfs_fonts.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    label { display: block; margin-top: 10px; }
+    input, select { width: 300px; padding: 5px; margin-top: 5px; }
+    button { margin-top: 15px; padding: 8px 15px; }
+    #invoice-app { display: none; }
+  </style>
 </head>
-<body class="container py-5">
-  <div id="login-section">
-    <h2>Admin Login</h2>
-    <input type="email" id="email" class="form-control my-2" placeholder="Email">
-    <input type="password" id="password" class="form-control my-2" placeholder="Password">
-    <button onclick="login()" class="btn btn-primary">Login</button>
-  </div>
+<body>
 
-  <div id="invoice-app" style="display:none;">
-    <h2>Create GST Invoice</h2>
-    <input type="text" id="booking-id" class="form-control my-2" placeholder="Booking ID (optional)">
-    <button onclick="fetchBooking()" class="btn btn-secondary mb-3">Fetch Booking</button>
+<!-- Login Screen -->
+<div id="login-section">
+  <h2>Login to Generate Invoice</h2>
+  <label>Email:</label>
+  <input type="email" id="email">
+  <label>Password:</label>
+  <input type="password" id="password">
+  <button onclick="login()">Login</button>
+  <div id="login-message" style="color:red;margin-top:10px;"></div>
+</div>
 
-    <input type="text" id="guest-name" class="form-control my-2" placeholder="Guest Name">
-    <input type="text" id="guest-gstin" class="form-control my-2" placeholder="Guest GSTIN (optional)">
-    <input type="text" id="guest-email" class="form-control my-2" placeholder="Guest Email (optional)">
-    <input type="text" id="room-type" class="form-control my-2" placeholder="Room Type">
-    <input type="date" id="checkin-date" class="form-control my-2" placeholder="Check-in Date">
-    <input type="date" id="checkout-date" class="form-control my-2" placeholder="Check-out Date">
-    <input type="number" id="amount" class="form-control my-2" placeholder="Room Tariff (₹)">
-    
-    <button onclick="generateInvoice()" class="btn btn-success">Generate Invoice</button>
-    <button onclick="logout()" class="btn btn-danger mt-3">Logout</button>
-  </div>
+<!-- Invoice Generator (hidden until login) -->
+<div id="invoice-app">
+  <button onclick="logout()" style="float:right;">Logout</button>
+  <h2>Hotel Vista Inn - Invoice Generator</h2>
+  <label>Booking ID:</label>
+  <input type="text" id="booking-id">
+  <button onclick="fetchBooking()">Fetch Booking</button>
+  <label>Guest Name:</label>
+  <input type="text" id="guest-name">
+  <label>Guest GSTIN:</label>
+  <input type="text" id="guest-gstin">
+  <label>Guest Email:</label>
+  <input type="email" id="guest-email">
+  <label>Room Type:</label>
+  <input type="text" id="room-type">
+  <label>Check-in Date:</label>
+  <input type="date" id="checkin-date">
+  <label>Check-out Date:</label>
+  <input type="date" id="checkout-date">
+  <label>Amount (Taxable Value):</label>
+  <input type="number" id="amount" step="0.01">
+  <button onclick="generateInvoice()">Generate Invoice</button>
+</div>
 
-  <script src="js/supabase.js"></script>
-  <script src="js/gst.js"></script>
-  <script src="js/pdf.js"></script>
+<script>
+// ---------- Supabase Client Setup (replace with your keys) ----------
+const supabaseClient = supabase.createClient(
+  'https://fvfhptpkyntqijtpgdse.supabase.co', 
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ2ZmhwdHBreW50cWlqdHBnZHNlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEzNDk4OTAsImV4cCI6MjA2NjkyNTg5MH0.HFVj4oZ_acMOmLiL7ix-G8DahuWzmL9mqDkuvjr8HRA'
+);
+
+// ---------- Authentication Functions ----------
+async function login() {
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value.trim();
+  if (!email || !password) {
+    document.getElementById('login-message').innerText = "Please enter email and password.";
+    return;
+  }
+  const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+  if (error) {
+    document.getElementById('login-message').innerText = "Login failed: " + error.message;
+  } else {
+    document.getElementById('login-section').style.display = 'none';
+    document.getElementById('invoice-app').style.display = 'block';
+    document.getElementById('login-message').innerText = "";
+  }
+}
+
+async function logout() {
+  await supabaseClient.auth.signOut();
+  document.getElementById('login-section').style.display = 'block';
+  document.getElementById('invoice-app').style.display = 'none';
+}
+
+// ---------- GST Calculation ----------
+function calculateGST(amount) {
+  const cgst = amount * 0.06;
+  const sgst = amount * 0.06;
+  const totalGst = cgst + sgst;
+  const total = amount + totalGst;
+  return {
+    cgst: parseFloat(cgst.toFixed(2)),
+    sgst: parseFloat(sgst.toFixed(2)),
+    totalGst: parseFloat(totalGst.toFixed(2)),
+    total: parseFloat(total.toFixed(2))
+  };
+}
+
+// ---------- Fetch Booking ----------
+async function fetchBooking() {
+  const bookingId = document.getElementById('booking-id').value.trim();
+  if (!bookingId) return alert("Enter Booking ID");
+  const { data, error } = await supabaseClient
+    .from('bookings')
+    .select('*')
+    .eq('booking_id', bookingId)
+    .single();
+  if (error || !data) {
+    alert("Booking not found. Please fill manually.");
+    return;
+  }
+  document.getElementById('guest-name').value = data.guest_name || '';
+  document.getElementById('guest-email').value = data.guest_email || '';
+  document.getElementById('room-type').value = data.room_type || '';
+  document.getElementById('checkin-date').value = data.checkin_date || '';
+  document.getElementById('checkout-date').value = data.checkout_date || '';
+  document.getElementById('amount').value = data.total_amount || '';
+}
+
+// ---------- Get Invoice by Booking ----------
+async function getInvoiceByBookingId(bookingId) {
+  const { data, error } = await supabaseClient
+    .from('invoices')
+    .select('*')
+    .eq('booking_id', bookingId)
+    .single();
+  return { data, error };
+}
+
+// ---------- Generate Invoice ----------
+async function generateInvoice() {
+  const bookingId = document.getElementById('booking-id').value.trim();
+  if (!bookingId) return alert("Booking ID required");
+  // Check for existing invoice
+  const { data: existingInvoice } = await getInvoiceByBookingId(bookingId);
+  let invoice;
+  if (existingInvoice) {
+    invoice = existingInvoice;
+  } else {
+    // Gather data
+    const guestName = document.getElementById('guest-name').value;
+    const gstin = document.getElementById('guest-gstin').value;
+    const guestEmail = document.getElementById('guest-email').value;
+    const roomType = document.getElementById('room-type').value;
+    const checkinDate = document.getElementById('checkin-date').value;
+    const checkoutDate = document.getElementById('checkout-date').value;
+    const amount = parseFloat(document.getElementById('amount').value);
+    let totalNights = '';
+    if (checkinDate && checkoutDate) {
+      const checkin = new Date(checkinDate);
+      const checkout = new Date(checkoutDate);
+      const diffTime = checkout.getTime() - checkin.getTime();
+      totalNights = Math.max(0, Math.ceil(diffTime / (1000*60*60*24)));
+    }
+    const gstData = calculateGST(amount);
+    // Insert new invoice
+    const { data, error } = await supabaseClient
+      .from('invoices')
+      .insert([{
+        booking_id: bookingId,
+        invoice_date: new Date().toISOString(),
+        guest_name: guestName,
+        guest_gstin: gstin || null,
+        guest_email: guestEmail || null,
+        room_type: roomType || null,
+        checkin_date: checkinDate || null,
+        checkout_date: checkoutDate || null,
+        total_night: totalNights,
+        supply_state: "Rajasthan",
+        taxable_value: amount,
+        cgst: gstData.cgst,
+        sgst: gstData.sgst,
+        total_gst: gstData.totalGst,
+        total_invoice_value: gstData.total,
+        hsn_code: "9963",
+        is_b2b: !!gstin
+      }])
+      .select();
+    if (error || !data || !data[0]) {
+      return alert("Failed to save invoice");
+    }
+    const serialId = data[0].serial_id;
+    const invoiceNumber = 'INV-' + String(serialId).padStart(4, '0');
+    await supabaseClient
+      .from('invoices')
+      .update({ invoice_number: invoiceNumber })
+      .eq('serial_id', serialId);
+    const { data: savedInvoice } = await supabaseClient
+      .from('invoices')
+      .select('*')
+      .eq('serial_id', serialId)
+      .single();
+    invoice = savedInvoice;
+  }
+  generateInvoicePDF(invoice);
+}
+
+// ---------- PDF Layout ----------
+function generateInvoicePDF(inv) {
+  const hotel = {
+    name: "Hotel Vista Inn",
+    address: "9A, Ranthambore road, Shooting Laudge Road,\nNear Big Cat, Patel Nagar, Sawai Madhopur, Rajasthan, 322001",
+    phone: "+91 9571719570",
+    email: "vista.ranthambore@gmail.com",
+    gstin: "08CLCPD8632E1ZB"
+  };
+  const docDefinition = {
+    content: [
+      { text: hotel.name, style: 'hotelName', alignment: 'center' },
+      { text: hotel.address, alignment: 'center' },
+      { text: `Email ID: ${hotel.email}`, alignment: 'center' },
+      { text: `Phone No.: ${hotel.phone}`, alignment: 'center' },
+      { text: `GST No.: ${hotel.gstin}`, alignment: 'center', margin: [0,0,0,10] },
+      { text: 'INVOICE', style: 'header', alignment: 'center', margin: [0,10] },
+      {
+        table: {
+          widths: ['auto','*','auto','*'],
+          body: [
+            [{text:'Billing To:',bold:true},{text:inv.guest_name||''},{text:'Invoice No.:',bold:true},{text:inv.invoice_number}],
+            [{text:'Booking ID:',bold:true},{text:inv.booking_id},{text:'Date:',bold:true},{text:new Date(inv.invoice_date).toLocaleDateString()}],
+            [{text:'GSTIN:',bold:true},{text:inv.guest_gstin||''},{text:'Room Type:',bold:true},{text:inv.room_type||''}],
+            [{text:'Email:',bold:true},{text:inv.guest_email||''},{text:'Check In:',bold:true},{text:inv.checkin_date||''}],
+            [{text:'',bold:true},{text:''},{text:'Check Out:',bold:true},{text:inv.checkout_date||''}]
+          ]
+        },
+        layout: 'noBorders',
+        margin: [0,10]
+      },
+      {
+        table: {
+          widths: ['*','auto','auto','auto','auto','auto'],
+          body: [
+            [{text:'Description',style:'tableHeader'},
+             {text:'Total Night',style:'tableHeader'},
+             {text:'Room Tariff/Night',style:'tableHeader'},
+             {text:'Discount',style:'tableHeader'},
+             {text:'Amount',style:'tableHeader'},
+             {text:'HSN/SAC',style:'tableHeader'}],
+            ['Room Charges', inv.total_night, 
+             (inv.taxable_value/inv.total_night).toFixed(2), 
+             inv.discount?inv.discount.toFixed(2):'0.00', 
+             inv.taxable_value.toFixed(2), '9963']
+          ]
+        },
+        margin: [0,10]
+      },
+      {
+        table: {
+          widths: ['*','auto'],
+          body: [
+            ['Sub Total', inv.taxable_value.toFixed(2)],
+            ['CGST @ 6%', inv.cgst.toFixed(2)],
+            ['SGST @ 6%', inv.sgst.toFixed(2)],
+            ['Total', inv.total_invoice_value.toFixed(2)]
+          ]
+        },
+        margin: [0,10]
+      },
+      { text: '*Please Deposite your Key to the Receptionists', italics:true, margin:[0,15] },
+      {
+        columns: [
+          { text:'Cashier Signature', alignment:'left' },
+          { text:"Guest's Signature", alignment:'right' }
+        ],
+        margin: [0,30]
+      },
+      { text: 'THANK YOU FOR YOUR VISIT, PLEASE VISIT US AGAIN !!!!', alignment:'center', bold:true, margin:[0,20] }
+    ],
+    styles: {
+      header: { fontSize: 18, bold:true },
+      hotelName: { fontSize: 16, bold:true },
+      tableHeader: { bold:true, fillColor:'#eeeeee' }
+    }
+  };
+  pdfMake.createPdf(docDefinition).download(`${inv.invoice_number}.pdf`);
+}
+</script>
 </body>
 </html>
