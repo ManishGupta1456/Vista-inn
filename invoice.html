@@ -150,7 +150,7 @@ async function fetchBooking() {
 
 // Get existing invoice
 async function getInvoiceByBookingId(bookingId) {
-  const { data, error } = await supabaseClient.from('invoices').select('*').eq('booking_id', bookingId).single();
+  const { data, error } = await supabaseClient.from('invoices').select('*').eq('booking_id', bookingId).maybeSingle();
   return { data, error };
 }
 
@@ -205,7 +205,7 @@ async function generateInvoice() {
   const { data: updated, error: updateError } = await supabaseClient
     .from('invoices')
     .update({ invoice_number: invoiceNumber })
-    .eq('id', row.serial_id) // adjust column name to match DB
+    .eq('serial_id', row.serial_id) // adjust column name to match DB
     .select();
 
   if (updateError) {
@@ -294,6 +294,7 @@ function generateInvoicePDF(inv) {
 
 </body>
 </html>
+
 
 
 
