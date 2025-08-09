@@ -435,3 +435,75 @@ text-align: center;
     
   }
 }
+body {
+  background: linear-gradient(120deg, #E3F0FF 0%, #F8F8FF 100%);
+  font-family: Arial, sans-serif;
+}
+
+.login-card, .invoice-card {
+  max-width: 650px;
+  margin: 40px auto;
+  background: #fff;
+  padding: 30px;
+  border-radius: 16px;
+  box-shadow: 0 6px 20px rgba(40,150,190,0.15);
+}
+
+.hotel-header {
+  text-align: center;
+  color: #2279c2;
+  margin-bottom: 20px;
+}
+
+.form-label {
+  font-weight: bold;
+  color: #316dab;
+}
+
+.form-input {
+  width: 100%;
+  padding: 7px;
+  border-radius: 8px;
+  border: 1px solid #b4d2ec;
+  margin-bottom: 15px;
+  background: #eef6fc;
+}
+
+.flex-row {
+  display: flex;
+  gap: 18px;
+}
+
+.form-group { flex: 1; }
+
+.btn-primary {
+  background: linear-gradient(90deg,#2279c2,#18a6f7);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.btn-action {
+  background: #ffb622;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.btn-secondary {
+  background: #b4d2ec;
+  color: #2279c2;
+  border: none;
+  padding: 7px 14px;
+  border-radius: 8px;
+}
+
+.error-msg {
+  color: red;
+  margin-top: 10px;
+}
+
