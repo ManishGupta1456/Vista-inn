@@ -189,22 +189,35 @@ async function generateInvoice() {
     supply_state: 'Rajasthan',
     is_b2b: !!document.getElementById('guest-gstin').value
   };
-   .select();
 
-  if (error || !data || !data[0] || !data[0].serial_id) {
-    alert("Failed to save invoice");
+  // Step 1: Insert new row without invoice_number
+  const { data: inserted, error: insertError } = await supabaseClient
+    .from('invoices')
+    .insert([inv])
+    .select();
+  
+  if (insertError) {
+    alert('Insert failed: ' + insertError.message);
     return;
   }
 
-  // 2. Use returned serial_id for the invoice number
-  const serialId = data[0].serial_id;
+  const serialId = inserted[0].serial_id;
   const invoiceNumber = 'INV-' + String(serialId).padStart(4, '0');
 
-  // 3. Optionally update the invoice_number column (store formatted invoice number)
-  await supabaseClient
+  // Step 2: Update invoice_number only for this row
+  const { error: updateError } = await supabaseClient
     .from('invoices')
     .update({ invoice_number: invoiceNumber })
     .eq('serial_id', serialId);
+
+  if (updateError) {
+    alert('Update failed: ' + updateError.message);
+    return;
+  }
+
+  const invoiceData = { ...inserted[0], invoice_number: invoiceNumber };
+  generateInvoicePDF(invoiceData);
+}
 
 // PDF generation (no HSN col, colorful)
 function generateInvoicePDF(inv) {
@@ -284,8 +297,6 @@ function generateInvoicePDF(inv) {
 
 </body>
 </html>
-
-
 
 
 
