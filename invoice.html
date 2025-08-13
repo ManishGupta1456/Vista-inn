@@ -133,7 +133,7 @@ function updateTaxableValue() {
 // Fetch booking
 async function fetchBooking() {
   const bookingId = document.getElementById('booking-id').value.trim();
-  const { data, error } = await supabaseClient.from('bookings').select('*').eq('booking_id', bookingId).maybesingle();
+  const { data, error } = await supabaseClient.from('bookings').select('*').eq('booking_id', bookingId).maybeSingle();
   if (error || !data) {
     alert("Booking not found. Please fill manually.");
     return;
@@ -294,6 +294,7 @@ function generateInvoicePDF(inv) {
 
 </body>
 </html>
+
 
 
 
