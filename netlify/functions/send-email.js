@@ -14,7 +14,7 @@ const allowedOrigins = [
   "https://vistahotels.in",
   "http://localhost:8888", // Netlify local dev
   "http://localhost:3000", // React local dev
-  "https://www.vistahotels.in 
+  "https://www.vistahotels.in"
 ];
 
 function getCorsHeaders(origin) {
@@ -141,3 +141,4 @@ exports.handler = async (event, context) => {
     };
   }
 };
+
